@@ -164,6 +164,7 @@ body {
   margin-left: 280px;
   padding: 0;
   min-height: 100vh;
+  position: relative; z-index: 1;
 }
 
 /* ======== COVER PAGE ======== */
@@ -701,7 +702,13 @@ code {
   animation: fadeInUp 0.6s ease forwards;
 }
 
-/* ======== PRINT ======== */
+/* ======== METEOR CANVAS ======== */
+#meteor-canvas {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%; height: 100%;
+}
 @media print {
   .sidebar, .mobile-toggle, .back-to-top { display: none; }
   .main-content { margin-left: 0; }
@@ -734,6 +741,9 @@ code {
 </style>
 </head>
 <body>
+
+<!-- METEOR BACKGROUND -->
+<canvas id="meteor-canvas"></canvas>
 
 <!-- MOBILE TOGGLE -->
 <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="菜单">☰</button>
@@ -1728,6 +1738,124 @@ console.log('%c📘 Codex 深度教程 %c已就绪',
 console.log('%c👆 点击选择题查看答案  |  ← → 键盘翻页  |  📱 支持移动端',
   'color:#8b5cf6;');
 console.log('%cAiDoris 出品 · 正式教材版', 'color:#6b6b80;font-style:italic;');
+</script>
+
+<!-- ======== METEOR ANIMATION ======== -->
+<script>
+(function() {
+  const canvas = document.getElementById('meteor-canvas');
+  const ctx = canvas.getContext('2d');
+  let meteors = [];
+  let animationId;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Meteor {
+    constructor() {
+      this.reset();
+      // Start off-screen so it's already mid-flight when visible
+      this.x = Math.random() * canvas.width * 1.5 - canvas.width * 0.25;
+      this.y = Math.random() * canvas.height * 0.4 - canvas.height * 0.1;
+    }
+
+    reset() {
+      // Angle: shooting down-right (between -35° and -55° from horizontal)
+      this.angle = -(Math.random() * 20 + 35) * (Math.PI / 180);
+      this.speed = Math.random() * 4 + 6;
+      this.length = Math.random() * 120 + 80;
+      this.opacity = Math.random() * 0.5 + 0.4;
+      this.headOpacity = 1;
+      // Colours: gold/purple/white mix to match theme
+      const hue = Math.random() < 0.6 ? 40 + Math.random() * 12 : 260 + Math.random() * 20;
+      const sat = 60 + Math.random() * 30;
+      const light = 70 + Math.random() * 20;
+      this.color = `hsl(${hue}, ${sat}%, ${light}%)`;
+      // Start from random edge
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height * 0.3 - 20;
+    }
+
+    update() {
+      this.x += Math.cos(this.angle) * this.speed;
+      this.y -= Math.sin(this.angle) * this.speed;
+      // Fade out toward the end of its life
+      if (this.x > canvas.width + 100 || this.y > canvas.height + 100) {
+        this.headOpacity -= 0.06;
+      }
+      return this.headOpacity > 0;
+    }
+
+    draw(ctx) {
+      const tailX = this.x - Math.cos(this.angle) * this.length;
+      const tailY = this.y + Math.sin(this.angle) * this.length;
+
+      const gradient = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
+      gradient.addColorStop(0, 'transparent');
+      gradient.addColorStop(0.3, this.color.replace(')', `, ${this.opacity * 0.15})`).replace('hsl', 'hsla'));
+      gradient.addColorStop(0.7, this.color.replace(')', `, ${this.opacity * 0.6})`).replace('hsl', 'hsla'));
+      gradient.addColorStop(1, this.color.replace(')', `, ${this.opacity * this.headOpacity})`).replace('hsl', 'hsla'));
+
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(this.x, this.y);
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Bright head dot
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = this.color.replace(')', `, ${this.headOpacity})`).replace('hsl', 'hsla');
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = this.color.replace(')', `, ${this.headOpacity * 0.3})`).replace('hsl', 'hsla');
+      ctx.fill();
+    }
+  }
+
+  function spawnMeteor() {
+    if (meteors.length < 4) {
+      meteors.push(new Meteor());
+    }
+    // Random interval: 1.5s - 5s
+    setTimeout(spawnMeteor, 1500 + Math.random() * 3500);
+  }
+
+  // Initial burst: 2 meteors close together
+  setTimeout(() => { meteors.push(new Meteor()); }, 800);
+  setTimeout(() => { meteors.push(new Meteor()); }, 1200);
+  setTimeout(spawnMeteor, 2500);
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    meteors = meteors.filter(m => {
+      m.update();
+      m.draw(ctx);
+      return m.headOpacity > 0;
+    });
+
+    animationId = requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // Throttle on visibility change to save battery
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(animationId);
+    } else {
+      animate();
+    }
+  });
+})();
 </script>
 
 </body>
