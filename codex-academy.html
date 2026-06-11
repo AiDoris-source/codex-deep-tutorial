@@ -134,21 +134,21 @@ a{color:var(--cyan);text-decoration:none}button{cursor:pointer;font:inherit}
 .cele.fire{opacity:1}.cele-text{font-size:clamp(22px,4vw,34px);font-weight:900;position:relative;z-index:1;animation:pop .5s cubic-bezier(.18,.89,.32,1.28)}
 @keyframes pop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
 /* ========= COSMOS BACKGROUND ========= */
-.cosmos{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}}
-.star-field{position:absolute;inset:0;opacity:.65;background:radial-gradient(ellipse at 12% 18%,rgba(61,91,170,.14),transparent 34%),radial-gradient(ellipse at 82% 26%,rgba(93,65,156,.1),transparent 30%),radial-gradient(ellipse at 48% 82%,rgba(27,115,137,.07),transparent 38%);filter:blur(14px);animation:nebula 18s ease-in-out infinite alternate}}
+.cosmos{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.star-field{position:absolute;inset:0;opacity:.65;background:radial-gradient(ellipse at 12% 18%,rgba(61,91,170,.14),transparent 34%),radial-gradient(ellipse at 82% 26%,rgba(93,65,156,.1),transparent 30%),radial-gradient(ellipse at 48% 82%,rgba(27,115,137,.07),transparent 38%);filter:blur(14px);animation:nebula 18s ease-in-out infinite alternate}
 @keyframes nebula{from{transform:scale(1.04)}to{transform:scale(1.1)}}
-.meteor{position:absolute;border-radius:50%;opacity:0;background:#fff;box-shadow:0 0 3px #fff,0 0 12px rgba(204,233,255,1),0 0 28px rgba(87,168,255,.6);mix-blend-mode:screen;width:7px;height:7px;animation:meteorFly var(--dur) cubic-bezier(.18,.72,.2,1) infinite}}
-.meteor::before{content:"";position:absolute;right:3px;top:50%;width:var(--tail);height:7px;border-radius:999px 0 0 999px;background:linear-gradient(90deg,transparent,rgba(111,181,240,.22) 58%,rgba(190,226,255,.7) 84%,#fff);transform:translateY(-50%);clip-path:polygon(0 50%,100% 0,100% 100%);filter:drop-shadow(0 0 2px rgba(145,204,255,.6)) drop-shadow(0 0 6px rgba(87,168,255,.2))}}
-.meteor.m1{--dur:14s;--tail:clamp(120px,16vw,260px);top:2%;left:-5%;animation-delay:-8s;--angle:14deg;transform:rotate(var(--angle))}}
-.meteor.m2{--dur:17s;--tail:clamp(100px,13vw,200px);top:8%;left:20%;animation-delay:-3s;--angle:18deg;transform:rotate(var(--angle))}}
-.meteor.m3{--dur:20s;--tail:clamp(150px,19vw,300px);top:15%;left:-8%;animation-delay:-12s;--angle:22deg;transform:rotate(var(--angle))}}
+.meteor{position:absolute;border-radius:50%;opacity:0;background:#fff;box-shadow:0 0 3px #fff,0 0 12px rgba(204,233,255,1),0 0 28px rgba(87,168,255,.6);mix-blend-mode:screen;width:7px;height:7px;animation:meteorFly var(--dur) cubic-bezier(.18,.72,.2,1) infinite}
+.meteor::before{content:"";position:absolute;right:3px;top:50%;width:var(--tail);height:7px;border-radius:999px 0 0 999px;background:linear-gradient(90deg,transparent,rgba(111,181,240,.22) 58%,rgba(190,226,255,.7) 84%,#fff);transform:translateY(-50%);clip-path:polygon(0 50%,100% 0,100% 100%);filter:drop-shadow(0 0 2px rgba(145,204,255,.6)) drop-shadow(0 0 6px rgba(87,168,255,.2))}
+.meteor.m1{--dur:14s;--tail:clamp(120px,16vw,260px);top:2%;left:-5%;animation-delay:-8s;--angle:14deg;transform:rotate(var(--angle))}
+.meteor.m2{--dur:17s;--tail:clamp(100px,13vw,200px);top:8%;left:20%;animation-delay:-3s;--angle:18deg;transform:rotate(var(--angle))}
+.meteor.m3{--dur:20s;--tail:clamp(150px,19vw,300px);top:15%;left:-8%;animation-delay:-12s;--angle:22deg;transform:rotate(var(--angle))}
 @keyframes meteorFly{0%,76%{opacity:0;transform:rotate(var(--angle)) translate3d(-18vw,-10vh,0)}77%{opacity:0}78%{opacity:1}85%{opacity:1}89%,100%{opacity:0;transform:rotate(var(--angle)) translate3d(112vw,46vh,0)}}
-.moon{position:absolute;top:80px;right:clamp(30px,8vw,120px);width:clamp(80px,10vw,140px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dce8ff 52%,#8ca8d7);box-shadow:0 0 30px rgba(220,232,255,.5),0 0 90px rgba(87,168,255,.25);animation:moonFloat 7s ease-in-out infinite;opacity:1;transition:opacity .6s}}
+.moon{position:absolute;top:80px;right:clamp(30px,8vw,120px);width:clamp(80px,10vw,140px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dce8ff 52%,#8ca8d7);box-shadow:0 0 30px rgba(220,232,255,.5),0 0 90px rgba(87,168,255,.25);animation:moonFloat 7s ease-in-out infinite;opacity:1;transition:opacity .6s}
 [data-theme="light"] .moon{opacity:0;pointer-events:none}
 @keyframes moonFloat{50%{transform:translateY(10px) rotate(1deg)}}
-.sun{position:absolute;top:80px;right:clamp(30px,8vw,120px);width:clamp(80px,10vw,140px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fffce8,rgba(255,220,120,.95) 35%,rgba(255,180,50,.85) 70%,rgba(255,140,20,.6));box-shadow:0 0 40px rgba(255,200,80,.5),0 0 120px rgba(255,160,30,.3),0 0 200px rgba(255,140,20,.15);animation:sunPulse 3s ease-in-out infinite;opacity:0;pointer-events:none;transition:opacity .6s}}
+.sun{position:absolute;top:80px;right:clamp(30px,8vw,120px);width:clamp(80px,10vw,140px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fffff0,#ffea80 20%,#ffcc33 50%,#ff9900 75%,#e67700 95%);box-shadow:0 0 50px rgba(255,180,20,.7),0 0 130px rgba(255,150,10,.45),0 0 220px rgba(255,120,0,.25),0 0 300px rgba(255,180,50,.15);animation:sunPulse 3s ease-in-out infinite;opacity:0;pointer-events:none;transition:opacity .6s}
 [data-theme="light"] .sun{opacity:1;pointer-events:auto}
-@keyframes sunPulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(255,200,80,.5),0 0 120px rgba(255,160,30,.3)}50%{transform:scale(1.04);box-shadow:0 0 55px rgba(255,200,80,.6),0 0 140px rgba(255,160,30,.4)}}
+@keyframes sunPulse{0%,100%{transform:scale(1);box-shadow:0 0 50px rgba(255,180,20,.7),0 0 130px rgba(255,150,10,.45),0 0 220px rgba(255,120,0,.25)}50%{transform:scale(1.05);box-shadow:0 0 70px rgba(255,200,40,.85),0 0 160px rgba(255,160,20,.55),0 0 260px rgba(255,130,10,.35)}}
 .cloud{position:absolute;border-radius:50%;background:rgba(255,255,255,.85);opacity:0;pointer-events:none;transition:opacity .6s}}
 [data-theme="light"] .cloud{opacity:1}
 .cloud::before,.cloud::after{content:"";position:absolute;border-radius:50%;background:inherit}}
@@ -173,9 +173,6 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
   <div class="star-field"></div>
   <div class="moon"></div>
   <div class="sun"></div>
-  <div class="cloud c1"></div>
-  <div class="cloud c2"></div>
-  <div class="cloud c3"></div>
   <i class="meteor m1"></i>
   <i class="meteor m2"></i>
   <i class="meteor m3"></i>
@@ -210,6 +207,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <section class="hero"><div class="hero-badge">AiDoris 出品 · 正式教材版</div>
 <h1>Codex <span class="gtext">统一学习平台</span></h1>
 <div class="hero-sub">架构深度 + 实战课程，双轨并进。<br>从理解原理到动手交付，一站完成。</div>
+<div style="margin-top:6px;font-size:13px;color:var(--muted)">👁️ <span id="visitor-count" style="font-weight:700;color:var(--gold)">…</span> 位学习者访问过</div>
 <div class="hero-actions">
 <button class="btn btn-p" onclick="switchView('diag')">📝 先测测你的水平</button>
 <button class="btn btn-o" onclick="switchView('track-b')">🎯 直接开始实战</button>
@@ -515,6 +513,28 @@ Codex = <span style="color:var(--gold)">Skill</span>（能力）<br>
 </div>
 
 <script>
+// ======== VISITOR COUNTER ========
+(function(){
+  const key = 'codex-visitor-count';
+  let count = parseInt(localStorage.getItem(key) || '0');
+  if (!sessionStorage.getItem('codex-visit-recorded')) {
+    count += 1;
+    localStorage.setItem(key, count);
+    sessionStorage.setItem('codex-visit-recorded', '1');
+  }
+  const el = document.getElementById('visitor-count');
+  if (el) {
+    el.textContent = (1 + count).toLocaleString();
+    // Also try external counter for cross-browser accuracy
+    fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Faidoris-source.github.io%2Fcodex-deep-tutorial%2Fcodex-academy.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visits&edge_flat=false')
+      .then(r => r.text())
+      .then(svg => {
+        const m = svg.match(/<text[^>]*>([\d,]+)<\/text>/);
+        if (m) el.textContent = m[1];
+      }).catch(() => {});
+  }
+})();
+
 // ======== STATE ========
 const K = 'codex-academy-v2';
 let S = loadState();
