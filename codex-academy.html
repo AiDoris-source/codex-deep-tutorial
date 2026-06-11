@@ -749,26 +749,34 @@ Codex = <span style="color:var(--gold)">Skill</span>（能力）<br>
 </div>
 
 <script>
-// ======== VISITOR COUNTER ========
+// ======== VISITOR COUNTER (single source: hits.seeyoufarm + cache) ========
 (function(){
-  const key = 'codex-visitor-count';
-  let count = parseInt(localStorage.getItem(key) || '0');
-  if (!sessionStorage.getItem('codex-visit-recorded')) {
-    count += 1;
-    localStorage.setItem(key, count);
-    sessionStorage.setItem('codex-visit-recorded', '1');
-  }
   const el = document.getElementById('visitor-count');
-  if (el) {
-    el.textContent = (101 + count).toLocaleString();
-    // Also try external counter for cross-browser accuracy
-    fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Faidoris-source.github.io%2Fcodex-deep-tutorial%2Fcodex-academy.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visits&edge_flat=false')
-      .then(r => r.text())
-      .then(svg => {
-        const m = svg.match(/<text[^>]*>([\d,]+)<\/text>/);
-        if (m) el.textContent = m[1];
-      }).catch(() => {});
+  if (!el) return;
+  const CACHE_KEY = 'codex-visitor-cached';
+  
+  // Show cached value immediately (stays stable across sessions)
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    el.textContent = parseInt(cached).toLocaleString();
+  } else {
+    el.textContent = '101';
   }
+  
+  // Fetch real server-side count and update cache
+  fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Faidoris-source.github.io%2Fcodex-deep-tutorial%2Fcodex-academy.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visits&edge_flat=false')
+    .then(r => r.text())
+    .then(svg => {
+      const m = svg.match(/<text[^>]*>([\d,]+)<\/text>/);
+      if (m && m[1]) {
+        const raw = m[1].replace(/,/g, '');
+        const serverCount = parseInt(raw);
+        if (!isNaN(serverCount)) {
+          el.textContent = serverCount.toLocaleString();
+          localStorage.setItem(CACHE_KEY, serverCount);
+        }
+      }
+    }).catch(() => {});
 })();
 
 // ======== STATE ========
