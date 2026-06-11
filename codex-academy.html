@@ -239,7 +239,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <nav>
 <button data-view="home" class="active" onclick="switchView('home')">🏠 首页</button>
 <button data-view="diag" onclick="switchView('diag')">📝 诊断</button>
-<button data-view="track-a" onclick="switchView('track-a')">🏗️ 深入理解</button>
+<button data-view="track-a" onclick="switchView('track-a')">🏗️ 进阶学习</button>
 <button data-view="track-b" onclick="switchView('track-b')">🎯 实战</button>
 <button data-view="dashboard" onclick="switchView('dashboard')">🏆 仪表盘</button>
 </nav>
@@ -284,7 +284,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 </div></section>
 <div class="path-grid">
 <div class="path-card ta" onclick="switchView('track-a')">
-<div class="pi">🏗️</div><h3>轨道A：深入理解</h3>
+<div class="pi">🏗️</div><h3>轨道A：进阶学习</h3>
 <p style="color:var(--muted);font-size:13px">从能力层到调度层的全链路自动化体系。理解 Codex 底层设计哲学 — Skill、MCP、scripts 三层模型。</p>
 <div class="pm"><span class="ptag">10 章</span><span class="ptag">22 道选择题</span><span class="ptag">原理导向</span></div>
 <div class="ps"><span>📖 预计 2-3 小时</span><span>🎯 理解「为什么」</span></div>
@@ -370,7 +370,7 @@ codex</div>
 <div class="do"><button class="doo" data-val="A">A. 不知道怎么办，放弃或者找人帮忙</button><button class="doo" data-val="B">B. 重新运行一次，看看能不能过</button><button class="doo" data-val="C">C. 查看错误信息，尝试自己修</button><button class="doo" data-val="D">D. 先复现问题、定位根因、做最小修复、再回归测试</button></div></div><div class="dq " data-q="4">
 <div class="dqn">问题 5 / 7</div>
 <div class="dqq">你想了解 Codex 底层架构（Skill/MCP/scripts）的设计原理吗？</div>
-<div class="do"><button class="doo" data-val="A">A. 不感兴趣，我只想学会怎么用</button><button class="doo" data-val="B">B. 有点好奇，但怕太技术看不懂</button><button class="doo" data-val="C">C. 有兴趣，想了解原理帮助更好使用</button><button class="doo" data-val="D">D. 非常想深入理解，我是技术背景</button></div></div><div class="dq " data-q="5">
+<div class="do"><button class="doo" data-val="A">A. 不感兴趣，我只想学会怎么用</button><button class="doo" data-val="B">B. 有点好奇，但怕太技术看不懂</button><button class="doo" data-val="C">C. 有兴趣，想了解原理帮助更好使用</button><button class="doo" data-val="D">D. 非常想进阶学习，我是技术背景</button></div></div><div class="dq " data-q="5">
 <div class="dqn">问题 6 / 7</div>
 <div class="dqq">你现在有自己动手用过任何 AI 编程或自动化工具吗？</div>
 <div class="do"><button class="doo" data-val="A">A. 从未用过</button><button class="doo" data-val="B">B. 看过别人用，自己没操作过</button><button class="doo" data-val="C">C. 试过一两次，但没做出完整成果</button><button class="doo" data-val="D">D. 经常使用，已经有自己的项目</button></div></div><div class="dq " data-q="6">
@@ -379,7 +379,7 @@ codex</div>
 <div class="do"><button class="doo" data-val="A">A. 完全陌生，从没打开过</button><button class="doo" data-val="B">B. 知道是什么但不会用</button><button class="doo" data-val="C">C. 会基本操作（cd、ls、运行脚本）</button><button class="doo" data-val="D">D. 熟练使用，能做自动化配置</button></div></div></div>
 <div class="dr" id="diag-result"><h2 id="diag-result-title"></h2><div class="rl" id="diag-result-level"></div><div class="rr" id="diag-result-recs"></div></div></div></div>
 <div class="view" id="view-track-a">
-<div class="content-area"><h2 class="section-title">🏗️ 轨道A：深入理解 <span style="color:var(--muted);font-size:14px;font-weight:400">— 从能力层到调度层的全链路自动化体系</span></h2>
+<div class="content-area"><h2 class="section-title">🏗️ 轨道A：进阶学习 <span style="color:var(--muted);font-size:14px;font-weight:400">— 从能力层到调度层的全链路自动化体系</span></h2>
 <p style="color:var(--muted);margin-bottom:24px">AiDoris制作</p>
 <article class="lcard" data-lesson="a1" id="lesson-a1">
 <div class="lh"><div><div class="ln">第1章</div><div class="lt">Codex 是什么</div>
@@ -977,7 +977,7 @@ const track_b_l3 = ["b9", "b10", "b11", "b12"];
 // Global achievement definitions
 const ALL_ACHIEVEMENTS = [
   {"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"},
-  {"id": "track-a-done", "icon": "🏗️", "name": "深入理解大师", "desc": "完成轨道A全部10章"},
+  {"id": "track-a-done", "icon": "🏗️", "name": "进阶学习大师", "desc": "完成轨道A全部10章"},
   {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"},
   {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"},
   {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"},
@@ -999,7 +999,11 @@ function checkAchievement(id, stats) {
     'track-b-done': stats.total >= 16,
     'streak-3': stats.streak >= 3,
     'streak-7': stats.streak >= 7,
-    'full-done': stats.ta >= 10 && stats.total >= 16,
+    // 全栈大师：必须前面8个徽章全部拿到之后才能解锁
+    'full-done': (function(){
+      const prev = ['first-lesson','track-a-done','track-b-ladder1','track-b-ladder2','track-b-ladder3','track-b-done','streak-3','streak-7'];
+      return prev.every(id => S.achievements.includes(id));
+    })(),
   };
   return conds[id] || false;
 }
