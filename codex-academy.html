@@ -862,25 +862,17 @@ function updateAchievements() {
   const total = S.completed.length;
   const stats = { total, ta, tb_l1, tb_l2, tb_l3, streak: S.streak };
 
-  const defs = [{"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"}, {"id": "track-a-done", "icon": "🏗️", "name": "架构师", "desc": "完成轨道A全部10章"}, {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"}, {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"}, {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"}, {"id": "track-b-done", "icon": "👑", "name": "构建者", "desc": "完成全部16节实战课程"}, {"id": "streak-3", "icon": "🔥", "name": "连续3天", "desc": "连续学习3天"}, {"id": "streak-7", "icon": "💎", "name": "7天坚持", "desc": "连续学习7天"}, {"id": "full-done", "icon": "🏅", "name": "全栈大师", "desc": "同时完成两个轨道全部内容"}];
-  
-  defs.forEach(a => {
+  ALL_ACHIEVEMENTS.forEach(a => {
     const cond_met = checkAchievement(a.id, stats);
     if (cond_met && !S.achievements.includes(a.id)) {
       S.achievements.push(a.id);
-      // Get serial number (101 base + achievement count)
       let serial = parseInt(localStorage.getItem('codex-cert-serial') || '101');
       serial += 1;
       localStorage.setItem('codex-cert-serial', serial);
-      // Save serial per achievement
       S.certSerials[a.id] = serial;
-      // Show certificate
       showCertificate(a, serial);
-      // Special: grand finale for full-done
       if (a.id === 'full-done') {
-        setTimeout(() => {
-          document.getElementById('grand-finale').classList.add('show');
-        }, 2500);
+        setTimeout(() => { document.getElementById('grand-finale').classList.add('show'); }, 2500);
       }
     }
   });
@@ -922,6 +914,12 @@ function showCertificate(achievement, serial) {
   spawnConfetti();
 }
 
+function showCertById(id) {
+  const a = getAchievementById(id);
+  const serial = S.certSerials[id] || parseInt(localStorage.getItem('codex-cert-serial') || '101');
+  if (a) showCertificate(a, serial);
+}
+
 function closeCertificate() {
   document.getElementById('cert-overlay').classList.remove('show');
   document.getElementById('cert-confetti').innerHTML = '';
@@ -946,6 +944,21 @@ const track_a_ids = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10"
 const track_b_l1 = ["b1", "b2", "b3", "b4"];
 const track_b_l2 = ["b5", "b6", "b7", "b8"];
 const track_b_l3 = ["b9", "b10", "b11", "b12"];
+
+// Global achievement definitions
+const ALL_ACHIEVEMENTS = [
+  {"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"},
+  {"id": "track-a-done", "icon": "🏗️", "name": "深入理解大师", "desc": "完成轨道A全部10章"},
+  {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"},
+  {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"},
+  {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"},
+  {"id": "track-b-done", "icon": "👑", "name": "构建者", "desc": "完成全部16节实战课程"},
+  {"id": "streak-3", "icon": "🔥", "name": "连续3天", "desc": "连续学习3天"},
+  {"id": "streak-7", "icon": "💎", "name": "7天坚持", "desc": "连续学习7天"},
+  {"id": "full-done", "icon": "🏅", "name": "全栈大师", "desc": "同时完成两个轨道全部内容"}
+];
+
+function getAchievementById(id) { return ALL_ACHIEVEMENTS.find(a => a.id === id); }
 
 function checkAchievement(id, stats) {
   const conds = {
@@ -985,26 +998,24 @@ function updateDashboard() {
   document.getElementById('d-achievements').textContent = S.achievements.length;
 
   // Badges - clickable when earned
-  const fullDefs = [{"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"}, {"id": "track-a-done", "icon": "🏗️", "name": "架构师", "desc": "完成轨道A全部10章"}, {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"}, {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"}, {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"}, {"id": "track-b-done", "icon": "👑", "name": "构建者", "desc": "完成全部16节实战课程"}, {"id": "streak-3", "icon": "🔥", "name": "连续3天", "desc": "连续学习3天"}, {"id": "streak-7", "icon": "💎", "name": "7天坚持", "desc": "连续学习7天"}, {"id": "full-done", "icon": "🏅", "name": "全栈大师", "desc": "同时完成两个轨道全部内容"}];
   const bg = document.getElementById('badge-grid');
-  bg.innerHTML = fullDefs.map(a => {
+  bg.innerHTML = ALL_ACHIEVEMENTS.map(a => {
     const earned = S.achievements.includes(a.id);
-    const serial = S.certSerials[a.id] || '—';
     if (earned) {
-      return '<span class="bd ea" style="cursor:pointer" onclick="showCertificate(' + JSON.stringify(a).replace(/"/g,'&quot;') + ',' + serial + ')" title="点击查看证书">' + a.icon + ' ' + a.name + '</span>';
+      return '<span class="bd ea" style="cursor:pointer" onclick="showCertById(\'' + a.id + '\')" title="点击查看证书">' + a.icon + ' ' + a.name + '</span>';
     }
     return '<span class="bd">' + a.icon + ' ' + a.name + '</span>';
   }).join('');
 
   // Achievement list - clickable
   const al = document.getElementById('achievement-list');
-  const earnedFull = fullDefs.filter(a => S.achievements.includes(a.id));
+  const earnedFull = ALL_ACHIEVEMENTS.filter(a => S.achievements.includes(a.id));
   if (earnedFull.length === 0) {
     al.innerHTML = '<div class="aitem"><div class="aicon">📖</div><div class="atext"><div class="aname">还没有获得成就</div><div class="adesc">开始学习并完成课程来解锁成就徽章</div></div></div>';
   } else {
     al.innerHTML = earnedFull.map(a => {
       const serial = S.certSerials[a.id] || '—';
-      return '<div class="aitem" style="cursor:pointer" onclick="showCertificate(' + JSON.stringify(a).replace(/"/g,'&quot;') + ',' + serial + ')" title="点击查看证书"><div class="aicon">' + a.icon + '</div><div class="atext"><div class="aname">' + a.name + ' 📜</div><div class="adesc">NO.' + serial + ' · 点击查看证书</div></div></div>';
+      return '<div class="aitem" style="cursor:pointer" onclick="showCertById(\'' + a.id + '\')" title="点击查看证书"><div class="aicon">' + a.icon + '</div><div class="atext"><div class="aname">' + a.name + ' 📜</div><div class="adesc">NO.' + serial + ' · 点击查看证书</div></div></div>';
     }).join('');
   }
 }
