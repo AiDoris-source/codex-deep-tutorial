@@ -207,6 +207,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 .name-card .name-btn:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(87,168,255,.3)}
 .name-card .skip-btn{margin-top:8px;background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:6px}
 </style>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -907,6 +908,7 @@ function showCertificate(achievement, serial) {
       <strong style="color:var(--gold)">继续保持，下一个里程碑就在前方！</strong>
     </div>
     <button class="cert-btn" onclick="closeCertificate()">🎖️ 收下证书，继续学习</button>
+    <button class="cert-btn" onclick="downloadCertificate()" style="background:linear-gradient(135deg,var(--cyan),#2d8a7a);margin-left:8px">📥 下载证书图片</button>
   `;
   
   // Force show
@@ -922,6 +924,26 @@ function showCertById(id) {
   const a = getAchievementById(id);
   const serial = S.certSerials[id] || parseInt(localStorage.getItem('codex-cert-serial') || '101');
   if (a) showCertificate(a, serial);
+}
+
+function downloadCertificate() {
+  const card = document.getElementById('cert-card');
+  if (!card || typeof html2canvas === 'undefined') { toast('下载功能加载中，请稍后重试'); return; }
+  toast('📥 正在生成证书图片...');
+  html2canvas(card, {
+    backgroundColor: '#0d1228',
+    scale: 2,
+    useCORS: true,
+    allowTaint: true
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'Codex荣誉证书_' + (S.name || '同学') + '_' + new Date().toISOString().slice(0,10) + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    toast('✅ 证书已下载！');
+  }).catch(() => {
+    toast('下载失败，请截图保存');
+  });
 }
 
 function closeCertificate() {
