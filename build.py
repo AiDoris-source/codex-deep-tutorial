@@ -1,0 +1,853 @@
+#!/usr/bin/env python3
+"""Generate the unified Codex Academy HTML."""
+import json, os
+
+OUT = '/Users/a1234/Downloads/AiDoris313/codex-academy.html'
+
+# ============================================================
+# CONTENT DATA
+# ============================================================
+
+diagnosis_questions = [
+    {
+        "q": "你知道 Codex 和普通 ChatGPT 聊天工具有什么本质区别吗？",
+        "opts": [
+            "A. 完全没概念，我以为是一样的",
+            "B. 大概知道 Codex 能操作文件，但具体不清楚",
+            "C. 知道 Codex 能读取项目、修改文件、运行命令",
+            "D. 我已经用过 Codex，了解它的工作模式"
+        ],
+        "scores": {"A":0,"B":1,"C":2,"D":3}
+    },
+    {
+        "q": "如果让你把一份会议记录整理成周报，你现在的做法是？",
+        "opts": [
+            "A. 手动复制粘贴，逐条整理",
+            "B. 用 AI 工具生成总结，再手动调整格式",
+            "C. 能让 AI 生成周报，但不检查信息是否缺失",
+            "D. 能让 AI 自动读取、整理、检查并生成完整周报"
+        ],
+        "scores": {"A":0,"B":1,"C":2,"D":3}
+    },
+    {
+        "q": "你理解「提示词工程」是什么意思吗？",
+        "opts": [
+            "A. 完全没听说过",
+            "B. 听说过但不知道具体是什么",
+            "C. 知道是要写好提示词，但不会系统化地写",
+            "D. 能写出包含目标、输入、输出、限制、完成标准的执行单"
+        ],
+        "scores": {"A":0,"B":1,"C":2,"D":3}
+    },
+    {
+        "q": "当一个自动化任务失败了，你的第一反应是？",
+        "opts": [
+            "A. 不知道怎么办，放弃或者找人帮忙",
+            "B. 重新运行一次，看看能不能过",
+            "C. 查看错误信息，尝试自己修",
+            "D. 先复现问题、定位根因、做最小修复、再回归测试"
+        ],
+        "scores": {"A":0,"B":1,"C":2,"D":3}
+    },
+    {
+        "q": "你想了解 Codex 底层架构（Skill/MCP/scripts）的设计原理吗？",
+        "opts": [
+            "A. 不感兴趣，我只想学会怎么用",
+            "B. 有点好奇，但怕太技术看不懂",
+            "C. 有兴趣，想了解原理帮助更好使用",
+            "D. 非常想深入理解，我是技术背景"
+        ],
+        "scores": {"A":0,"B":1,"C":2,"D":3}
+    },
+    {
+        "q": "你现在有自己动手用过任何 AI 编程或自动化工具吗？",
+        "opts": [
+            "A. 从未用过",
+            "B. 看过别人用，自己没操作过",
+            "C. 试过一两次，但没做出完整成果",
+            "D. 经常使用，已经有自己的项目"
+        ],
+        "scores": {"A":0,"B":1,"C":2,"D":3}
+    },
+    {
+        "q": "你对「命令行终端」的熟悉程度？",
+        "opts": [
+            "A. 完全陌生，从没打开过",
+            "B. 知道是什么但不会用",
+            "C. 会基本操作（cd、ls、运行脚本）",
+            "D. 熟练使用，能做自动化配置"
+        ],
+        "scores": {"A":0,"B":0,"C":1,"D":2}
+    }
+]
+
+achievements = [
+    {"id":"first-lesson","icon":"🌟","name":"初识者","desc":"完成第一节课","condition":lambda s: s['total']>=1},
+    {"id":"track-a-done","icon":"🏗️","name":"架构师","desc":"完成轨道A全部10章","condition":lambda s: s.get('ta',0)>=10},
+    {"id":"track-b-ladder1","icon":"📋","name":"交付者","desc":"完成实战课程阶梯一（4节）","condition":lambda s: s.get('tb_l1',0)>=4},
+    {"id":"track-b-ladder2","icon":"⚙️","name":"工程师","desc":"完成实战课程阶梯二（8节）","condition":lambda s: s.get('tb_l2',0)>=4},
+    {"id":"track-b-ladder3","icon":"🎼","name":"编排大师","desc":"完成实战课程阶梯三（12节）","condition":lambda s: s.get('tb_l3',0)>=4},
+    {"id":"track-b-done","icon":"👑","name":"构建者","desc":"完成全部16节实战课程","condition":lambda s: s['total']>=16},
+    {"id":"streak-3","icon":"🔥","name":"连续3天","desc":"连续学习3天","condition":lambda s: s.get('streak',0)>=3},
+    {"id":"streak-7","icon":"💎","name":"7天坚持","desc":"连续学习7天","condition":lambda s: s.get('streak',0)>=7},
+    {"id":"full-done","icon":"🏅","name":"全栈大师","desc":"同时完成两个轨道","condition":lambda s: s.get('ta',0)>=10 and s['total']>=16},
+]
+
+# ============================================================
+# TRACK A: Architecture Deep Dive (10 chapters)
+# ============================================================
+
+track_a = [
+  {"id":"a1","title":"Codex 是什么","sub":"重新定义 AI 的角色：从\"回答者\"到\"执行者\"","bloom":"理解","scaffold":"L1","load":"低","time":"15min",
+   "body":'''<p>Codex 是一个<strong style="color:var(--gold)">自动化执行系统</strong>，由三大核心组成：<strong>Skill（能力）</strong>、<strong>MCP（工具）</strong>、<strong>scripts（调度）</strong>。</p>
+<p>它不是一个"回答问题的 AI"，而是一个能执行任务、能调度工具、能自动化生产内容的系统。</p>
+<h4>Codex 的六大价值</h4>
+<ul><li><strong>自动执行</strong> — 无需人工干预完成复杂任务</li><li><strong>自动判断</strong> — 根据结果决定下一步操作</li><li><strong>自动修复</strong> — 遇到错误自动尝试修复</li><li><strong>自动重试</strong> — 失败后自动重新执行</li><li><strong>自动清理</strong> — 完成后的临时文件清理</li><li><strong>自动产出</strong> — 直接交付最终成品</li></ul>''',
+   "meta":'<div class="mp"><div class="mpi">💭</div><div class="mpt"><strong>暂停一下：</strong>用你自己的话，给你一个完全不懂技术的朋友解释：Codex 和普通 AI 聊天工具有什么不同？</div></div>'},
+  
+  {"id":"a2","title":"Codex 的三层架构","sub":"能力层 · 工具层 · 调度层 —— 三位一体","bloom":"理解","scaffold":"L1","load":"中","time":"20min",
+   "body":'''<p>Codex 底层由三层组成：</p>
+<h4>🎯 scripts（调度层 · 指挥官）</h4><p>决定什么时候做、用什么做、怎么做。负责顺序、条件、循环、重试、检查、产出。</p>
+<h4>🧠 Skill（能力层 · 能力专家）</h4><p>只做单项能力 — 写文章、剪视频、生成封面、抓取网页。不做流程控制，必须返回结构化数据（JSON）。</p>
+<h4>🔧 MCP（工具层 · 工具接口）</h4><p>调用 FFmpeg、Firecrawl、Notion API、浏览器、本地命令。是 Skill 与外部工具之间的桥梁。</p>
+<blockquote><strong>数据流闭环：</strong>scripts → Skill → MCP → 外部工具 → MCP → Skill（JSON）→ scripts → output</blockquote>''',
+   "meta":'<div class="mp"><div class="mpi">💭</div><div class="mpt"><strong>暂停一下：</strong>不看上文，画出 Codex 的三层架构图。每层一句话说明它的职责。</div></div>'},
+  
+  {"id":"a3","title":"Workspace 全结构解析","sub":"Codex 的 Workspace 是一个完整的自动化工程","bloom":"理解","scaffold":"L1","load":"低","time":"15min",
+   "body":'''<p>Codex 的 Workspace 由 8 个目录组成：</p>
+<table><tr><th>目录</th><th>职责</th></tr>
+<tr><td><code>assets</code></td><td>要处理什么</td></tr>
+<tr><td><code>config</code></td><td>怎么处理</td></tr>
+<tr><td><code>templates</code></td><td>做成什么样</td></tr>
+<tr><td><code>scripts</code></td><td>什么时候做、怎么做</td></tr>
+<tr><td><code>skill</code></td><td>具体怎么做</td></tr>
+<tr><td><code>mcp</code></td><td>用什么工具做</td></tr>
+<tr><td><code>output</code></td><td>最终成品</td></tr>
+<tr><td><code>runtime</code></td><td>临时文件区</td></tr></table>
+<p><strong>数据流路线：</strong><code>assets</code> + <code>config</code> + <code>templates</code> → <code>scripts</code> → <code>skill</code> → <code>mcp</code> → <code>output</code></p>'''},
+  
+  {"id":"a4","title":"Skill（能力层）","sub":"能力专家：只做单项能力，不做流程控制","bloom":"理解","scaffold":"L1","load":"中","time":"18min",
+   "body":'''<h4>Skill 的核心流程</h4>
+<ol><li>接收 scripts 的任务描述</li><li>调用 MCP</li><li>执行能力</li><li>返回结构化数据（JSON）</li></ol>
+<h4>Skill 的特点</h4>
+<ul><li><strong>不做流程</strong> — 不决定什么时候执行</li><li><strong>不做判断</strong> — 不评估结果好坏</li><li><strong>不做调度</strong> — 不编排执行顺序</li><li><strong>只做"单项能力"</strong> — 专注一件事做到极致</li><li><strong>必须返回结构化数据</strong> — 确保下游可消费</li></ul>
+<blockquote>Skill 就像一个<strong>高级技工</strong>：接到任务 → 拿工具 → 干活 → 交出结果。但不问"为什么做"也不管"下一步是什么"。</blockquote>
+<h4>🔍 纠错演练</h4>
+<div class="ee"><div class="eeh">🐛 下面这段描述哪里有问题？</div><div class="badp">"Skill 是整个 Codex 系统的大脑，它负责决定什么时候执行任务、检查任务结果是否合格、并在失败时自动重试。"</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 查看答案</button><div class="hintt">❌ 错误！Skill 不做流程控制、不做判断、不做调度。<strong>scripts</strong> 才是大脑，负责决策和调度。Skill 只做单项能力执行。</div></div>'''},
+  
+  {"id":"a5","title":"MCP（工具层）","sub":"工具接口：Skill 与外部世界之间的桥梁","bloom":"理解","scaffold":"L1","load":"低","time":"12min",
+   "body":'''<h4>MCP 的核心流程</h4><ol><li>接收 Skill 的工具调用</li><li>执行命令或 API</li><li>返回结构化数据（JSON）</li></ol>
+<h4>MCP 的核心价值</h4><ul><li><strong>解耦</strong> — Skill 不需要知道工具的具体实现</li><li><strong>标准化</strong> — 统一的接口规范，输入输出都是 JSON</li><li><strong>可扩展</strong> — 新增工具只需实现 MCP 接口</li><li><strong>闭环</strong> — Skill → MCP → 工具 → MCP → Skill 形成完整闭环</li></ul>'''},
+  
+  {"id":"a6","title":"scripts（调度层）","sub":"指挥官：整个系统的\"大脑\"","bloom":"分析","scaffold":"L1","load":"中","time":"20min",
+   "body":'''<p><strong>scripts 负责的 8 项关键决策：</strong></p>
+<ol><li><strong>读取素材</strong> — 从 assets 目录获取原始内容</li><li><strong>读取参数</strong> — 从 config 读取自动化配置</li><li><strong>选择 Skill</strong> — 根据任务类型选择合适的 Skill</li><li><strong>下达任务</strong> — 将任务描述传递给 Skill</li><li><strong>检查结果</strong> — 验证 Skill 返回的 JSON 是否符合要求</li><li><strong>重试/修正</strong> — 结果不符合要求时自动重试</li><li><strong>写入 output</strong> — 将最终成品写入 output 目录</li><li><strong>清理 runtime</strong> — 删除临时文件</li></ol>
+<div class="ee"><div class="eeh">🐛 纠错题：如果 Skill 返回了不合格的 JSON，scripts 应该直接放弃并把半成品写入 output。这个说法对吗？</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 查看答案</button><div class="hintt">❌ 不对！scripts 应该先<strong>重试</strong>或调用其他 Skill 修正，而不是放弃或写入半成品。这正是 Codex 自愈能力的体现。</div></div>'''},
+  
+  {"id":"a7","title":"Codex 自动化 8 步流程","sub":"完整的自动化闭环 —— 从素材到成品","bloom":"分析","scaffold":"L1","load":"中","time":"18min",
+   "body":'''<p>这是 Codex 的核心运行机制：</p>
+<ol><li>📥 读取素材（assets）</li><li>⚙️ 读取参数（config）</li><li>🧠 选择 Skill</li><li>📝 下达任务描述</li><li>🔧 Skill + MCP 执行</li><li>📊 返回 JSON</li><li>✅ 检查结果</li><li>🔄 重试/修正（如需要）</li><li>📤 写入 output</li><li>🧹 清理 runtime</li></ol>
+<blockquote><strong>这是一个完整的自动化闭环。</strong>从素材输入到成品输出，每一步都由 Codex 自动完成。</blockquote>'''},
+  
+  {"id":"a8","title":"全部选择题（22题）","sub":"点击每题查看答案（绿色标注）","bloom":"记忆","scaffold":"L1","load":"低","time":"25min",
+   "body":'''<p style="color:var(--muted);font-size:13px">👆 点击每题查看正确答案</p>
+<div class="quiz-block"></div>'''},
+  
+  {"id":"a9","title":"深度解析","sub":"完整讲解 Codex 的设计哲学","bloom":"评价","scaffold":"L1","load":"高","time":"20min",
+   "body":'''<h4>🎓 设计哲学一：关注点分离</h4><p>Codex 将<strong>能力</strong>、<strong>工具</strong>、<strong>调度</strong>彻底分离。每一层只做好自己的事，不越界。任意一层都可以独立替换、独立升级、独立测试。</p>
+<h4>🏗️ 设计哲学二：结构化数据驱动</h4><p>所有层间通信都使用 JSON。任何 Skill 的输出都可以被任何 scripts 消费——无论 Skill 内部用什么语言实现。</p>
+<h4>🔄 设计哲学三：自愈能力</h4><p>"如果 A 则 B，否则<strong>再试一次</strong>"。这种自愈能力是 Codex 区别于普通脚本的核心差异。</p>
+<h4>📊 设计哲学四：全链路可观测</h4><p>从 assets 到 output 的每一步都是可追踪的。runtime 保存临时文件，scripts 保留执行日志。</p>
+<div class="tt"><div class="ttb">🔄 迁移任务</div><h3>把三层架构用到你自己的工作中</h3><p>想一个你日常重复做的工作任务（比如每周整理报表、每天回复邮件模板、定期更新数据），用 Codex 的三层模型重新设计它：谁是指挥官（scripts）？什么是能力模块（Skill）？需要什么工具（MCP）？</p></div>'''},
+  
+  {"id":"a10","title":"Codex 的本质总结","sub":"一个简单优雅的公式","bloom":"评价","scaffold":"L1","load":"低","time":"10min",
+   "body":'''<div style="text-align:center;padding:24px;font-size:22px;font-weight:800;line-height:2">
+Codex = <span style="color:var(--gold)">Skill</span>（能力）<br>
++ <span style="color:var(--cyan)">MCP</span>（工具）<br>
++ <span style="color:var(--green)">scripts</span>（调度）<br>
++ <span style="color:var(--muted)">Workspace</span>（结构）
+</div>
+<p><strong>Codex 是一个：</strong>自愈系统 · 自动化系统 · 多能力协作系统 · 可扩展系统 · 可编排系统</p>
+<blockquote><strong>Codex 的核心价值：</strong>让 AI 具备执行能力，而不是回答能力。</blockquote>
+<p style="text-align:center;font-size:18px;font-weight:700;color:var(--gold)">"Codex 不是回答问题，是完成任务。"</p>'''},
+]
+
+# Quiz data for chapter A8
+quizzes = [
+  {"cat":"📂 第一章：Workspace 结构","items":[
+    {"q":"1. assets 的作用是什么？","opts":[["A","存放原始素材",1],["B","存放最终成品",0],["C","存放脚本",0],["D","存放临时文件",0]]},
+    {"q":"2. output 的作用是什么？","opts":[["A","存放最终成品",1],["B","存放素材",0],["C","存放模板",0],["D","存放临时文件",0]]},
+    {"q":"3. config 的作用是什么？","opts":[["A","存放自动化参数",1],["B","存放脚本",0],["C","存放模板",0],["D","存放临时文件",0]]},
+    {"q":"4. templates 的作用是什么？","opts":[["A","存放模板结构",1],["B","存放素材",0],["C","存放工具接口",0],["D","存放临时文件",0]]},
+    {"q":"5. scripts 的作用是什么？","opts":[["A","流程控制（总指挥）",1],["B","存放素材",0],["C","存放模板",0],["D","存放临时文件",0]]},
+    {"q":"6. Skill 的作用是什么？","opts":[["A","存放脚本",0],["B","能力模块",1],["C","存放素材",0],["D","存放临时文件",0]]},
+    {"q":"7. MCP 的作用是什么？","opts":[["A","工具接口",1],["B","存放素材",0],["C","存放模板",0],["D","存放临时文件",0]]},
+    {"q":"8. runtime 的作用是什么？","opts":[["A","临时文件区",1],["B","成品",0],["C","模板",0],["D","脚本",0]]},
+  ]},
+  {"cat":"🧠 第二章：Skill 机制","items":[
+    {"q":"9. Skill 的输入来自哪里？","opts":[["A","assets",0],["B","scripts",1],["C","MCP",0],["D","output",0]]},
+    {"q":"10. Skill 的输出是什么？","opts":[["A","结构化数据（JSON）",1],["B","文本",0],["C","命令",0],["D","文件",0]]},
+    {"q":"11. Skill 是否直接调用外部工具？","opts":[["A","不直接，通过 MCP 调用",1],["B","是，直接调用",0]]},
+  ]},
+  {"cat":"🔧 第三章：MCP 机制","items":[
+    {"q":"12. MCP 的核心作用是什么？","opts":[["A","与外部工具通信",1],["B","存放素材",0],["C","控制流程",0],["D","写入输出",0]]},
+    {"q":"13. MCP 返回什么？","opts":[["A","结构化数据（JSON）",1],["B","文件",0],["C","命令",0],["D","日志",0]]},
+    {"q":"14. MCP 是否是数据流闭环的一部分？","opts":[["A","是",1],["B","否",0]]},
+  ]},
+  {"cat":"🎯 第四章：scripts 机制","items":[
+    {"q":"15. scripts 第一步是什么？","opts":[["A","读取素材",1],["B","写入 output",0]]},
+    {"q":"16. scripts 第二步是什么？","opts":[["A","读取 config",1],["B","选择 Skill",0]]},
+    {"q":"17. scripts 第三步是什么？","opts":[["A","选择 Skill",1],["B","检查结果",0]]},
+    {"q":"18. scripts 第四步是什么？","opts":[["A","下达任务描述",1],["B","写入 output",0]]},
+    {"q":"19. scripts 第五步是什么？","opts":[["A","检查结果",1],["B","清理 runtime",0]]},
+    {"q":"20. 如果结果不符合要求，scripts 会做什么？","opts":[["A","重试",1],["B","放弃",0],["C","写入 output",0],["D","删除 assets",0]]},
+    {"q":"21. scripts 第七步是什么？","opts":[["A","写入 output",1],["B","清理 runtime",0]]},
+    {"q":"22. scripts 最后一步是什么？","opts":[["A","清理 runtime",1],["B","读取素材",0]]},
+  ]},
+]
+
+# ============================================================
+# TRACK B: Hands-on Course (16 lessons)
+# ============================================================
+
+track_b = [
+  {"id":"b1","ladder":"阶梯一","title":"认识 Codex：从\"问答案\"到\"交付结果\"","bloom":"理解","scaffold":"L3","load":"低","time":"30min",
+   "body":'''<h3>【目标】</h3><ul><li>理解 Codex 与普通聊天工具的区别</li><li>知道什么任务适合交给 Codex</li><li>学会先让它观察，再决定是否修改</li></ul>
+<h3>【真实案例】</h3><p>一家小团队每周一开运营会。会后负责人需要花 40 分钟：从聊天记录里找待办事项、按负责人和截止时间整理、写会议摘要。Codex 可以直接在项目文件夹中读取会议记录，生成 <code>行动清单.md</code> 和 <code>会议摘要.md</code>。</p>
+<h3>【动手尝试】</h3><div class="cb">请先只阅读当前文件夹，不要修改文件。\n请告诉我：\n1. 当前有哪些文件；\n2. 会议记录里有哪些明确任务；\n3. 哪些任务缺少负责人或截止时间；\n4. 如果要把它整理成行动清单，你建议输出什么结构。\n请用没有技术背景的人能直接理解的语言说明。</div>
+<h3>【验收检查】</h3><ol><li>为什么"先阅读，不要修改"是一个重要指令？</li><li>哪些对外发送、删除或付款动作必须保留人工确认？</li><li>Codex 的优势为什么不只是"写得快"？</li></ol>''',
+   "meta":'<div class="mp"><div class="mpi">💭</div><div class="mpt"><strong>费曼挑战：</strong>假装你正在教一个完全不懂 AI 的同事。用不超过三句话解释：Codex 和普通 ChatGPT 有什么不同？</div></div>'},
+  
+  {"id":"b2","ladder":"阶梯一","title":"安装、登录、工作目录与权限","bloom":"应用","scaffold":"L3","load":"中","time":"35min",
+   "body":'''<h3>【目标】</h3><ul><li>选择适合自己的 Codex 使用入口</li><li>正确打开项目文件夹</li><li>理解只读、工作区写入和完全访问的区别</li></ul>
+<h3>【核心内容】</h3><table><tr><th>使用方式</th><th>适合人群</th></tr><tr><td>桌面应用</td><td>第一次接触 Codex、需要看改动的人</td></tr><tr><td>CLI</td><td>愿意使用终端的人</td></tr><tr><td>IDE 扩展</td><td>已在 VS Code 等编辑器工作的人</td></tr><tr><td>网页版</td><td>使用 GitHub 团队协作的人</td></tr></table>
+<h4>权限的大白话解释</h4><p><strong>只读：</strong>可以看资料和分析，不能改文件。<br><strong>工作区写入：</strong>可以修改当前项目，但不能随意操作项目外的内容。<br><strong>完全访问：</strong>可以触及更大的系统范围，风险也更高。</p>
+<h3>【动手尝试】</h3><div class="cb">请不要修改文件。\n请说明当前工作目录、你能够访问的范围，以及如果后续需要联网或操作项目外文件时会发生什么。</div>'''},
+  
+  {"id":"b3","ladder":"阶梯一","title":"第一次真实交付：把会议记录变成行动周报","bloom":"应用","scaffold":"L3","load":"中","time":"40min",
+   "body":'''<h3>【目标】</h3><ul><li>让 Codex 创建真实可用的文件</li><li>学会描述输入、输出和完成标准</li><li>完成第一次办公交付</li></ul>
+<h3>【核心内容】</h3><p>一个可执行任务最好包含六部分：<strong>目标、输入、输出、规则、限制、完成标准。</strong></p>
+<h3>【动手尝试】</h3><div class="cb">目标：把本周三份会议记录整理成一份运营周报。\n输入：meetings/周一例会.md, meetings/内容复盘.md, meetings/投放讨论.md\n输出：reports/本周运营周报.md\n周报结构：1.本周完成 2.未完成及原因 3.下周计划 4.需要决策 5.行动清单\n规则：不要编造会议记录中没有的信息；缺少负责人或时间时标记"待确认"\n完成标准：三份记录都被覆盖；每个行动项都有负责人字段和时间字段</div>'''},
+  
+  {"id":"b4","ladder":"阶梯一","title":"审查改动、验证结果与安全撤回","bloom":"评价","scaffold":"L2","load":"中","time":"35min",
+   "body":'''<h3>【目标】</h3><ul><li>学会查看修改前后的差异</li><li>用验收清单检查交付</li><li>出现问题时停止、定位并撤回</li></ul>
+<h3>【核心内容】</h3><h4>交付前四层检查</h4><ol><li><strong>范围检查</strong>：只改了应该改的文件吗？</li><li><strong>内容检查</strong>：有没有添加来源里不存在的信息？</li><li><strong>功能检查</strong>：页面、按钮、导出是否真的能用？</li><li><strong>风险检查</strong>：有没有密钥、个人信息或不该对外的内容？</li></ol>
+<div class="ee"><div class="eeh">🐛 找错题</div><div class="badp">用户："请审查当前未提交改动，然后帮我直接把修改发布到生产环境。"</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 几个问题？</button><div class="hintt">❌ 这个请求有 2 个问题：<br>1. 审查和发布不应该在同一个请求里 — 审查完应该停下来等人工确认<br>2. "直接发布到生产环境"跳过了人工审批，属于高风险操作</div></div>'''},
+  
+  {"id":"b5","ladder":"阶梯二","title":"用函数处理重复办公规则","bloom":"应用","scaffold":"L2","load":"中","time":"40min",
+   "body":'''<h3>【目标】</h3><ul><li>用大白话理解函数</li><li>把重复判断变成可测试规则</li><li>完成一次内容数据处理</li></ul>
+<h3>【核心内容】</h3><p>函数就是一段可以重复使用的固定处理规则。它像 Excel 公式，但可以处理更复杂的情况。</p>
+<div class="cb">请创建一个 JavaScript 选题评分工具。\n输入字段：title, trend(0-100), relevance(0-100), businessValue(0-100), difficulty(0-100)\n输出：totalScore, priority(高/中/低)\n要求：先写测试样本再实现函数；缺少字段时给出明确错误；分数超出范围时拒绝计算</div>
+<div class="mp"><div class="mpi">💭</div><div class="mpt"><strong>反思：</strong>你刚才学到了函数。如果下周让你独立写一个"客户优先级排序"函数（评分标准完全不同），你能做到吗？哪里可能会卡住？</div></div>'''},
+  
+  {"id":"b6","ladder":"阶梯二","title":"调试：解决批量导出中的真实故障","bloom":"分析","scaffold":"L2","load":"高","time":"45min",
+   "body":'''<h3>【目标】</h3><ul><li>掌握"复现、定位、修复、回归验证"</li><li>学会提供有效错误信息</li><li>避免修好一个问题又引入另一个问题</li></ul>
+<h3>【核心内容】</h3><p><strong>现象 → 预期 → 复现 → 根因 → 修复 → 回归测试</strong></p>
+<div class="ee"><div class="eeh">🐛 纠错题</div><div class="badp">用户："脚本坏了，帮我全部修好。"</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 有几个问题？</button><div class="hintt">❌ 这个请求太模糊了！更好的做法：<br>1. 描述具体现象（"标题含 / 时导出失败"）<br>2. 说明预期结果<br>3. 给出复现步骤<br>4. 要求先写测试再修复<br>5. 要求只做最小修复</div></div>'''},
+  
+  {"id":"b7","ladder":"阶梯二","title":"提示词工程：把业务需求写成执行单","bloom":"应用","scaffold":"L2","load":"中","time":"40min",
+   "body":'''<h3>【目标】</h3><ul><li>掌握目标、背景、输入、输出、规则、限制、完成标准（七格）</li><li>用示例减少歧义</li><li>学会让 Codex 在信息不足时先提问</li></ul>
+<h4>提示词七格</h4><table><tr><th>区块</th><th>回答的问题</th></tr><tr><td>目标</td><td>最终要完成什么</td></tr><tr><td>背景</td><td>业务、用户和现状</td></tr><tr><td>输入</td><td>从哪里读取资料</td></tr><tr><td>输出</td><td>要生成哪些文件</td></tr><tr><td>规则</td><td>内容怎样处理</td></tr><tr><td>限制</td><td>哪些事情不能做</td></tr><tr><td>完成标准</td><td>怎样判断可以交付</td></tr></table>
+<div class="ee"><div class="eeh">🐛 请把这个模糊需求改写成七格执行单</div><div class="badp">"帮我把这篇文章改成小红书。"</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 缺失了什么？</button><div class="hintt">缺失了至少 6 个信息：目标受众、内容长度、必须保留的信息、能否夸张、是否需要标题和封面文案和标签、怎样算完成。一个好的执行单应该把这些都写清楚。</div></div>'''},
+  
+  {"id":"b8","ladder":"阶梯二","title":"阶梯项目：办公内容助手","bloom":"创造","scaffold":"L1","load":"高","time":"60min",
+   "body":'''<h3>【目标】</h3><p>综合文件读取、函数、调试和提示词，完成一个每天能使用的办公工具。</p>
+<h3>【动手尝试】</h3><div class="cb">请为"办公内容助手"制定实现计划，先不要修改文件。\n目标：从 input 中读取当天材料；生成 output/daily-report.md；更新 output/action-items.csv\n必须处理：重复任务、缺少负责人、逾期任务、同一任务在不同会议中状态不一致。\n请列出：1.文件结构 2.每一步输入和输出 3.测试样本 4.验收标准 5.可能的业务风险</div>
+<div class="tt"><div class="ttb">🔄 迁移任务</div><h3>从办公助手到你的实际工作</h3><p>你现在已经会搭建办公助手了。想一个你工作中每周需要重复做的报告或整理任务，用同样的"输入→处理→输出→验收"四步法设计一个自动化方案。</p></div>'''},
+  
+  {"id":"b9","ladder":"阶梯三","title":"先规划再执行：设计自媒体生产流水线","bloom":"分析","scaffold":"L2","load":"中","time":"45min",
+   "body":'''<h3>【目标】</h3><ul><li>把内容生产拆成可检查的环节</li><li>识别哪些步骤依赖前一步</li><li>为每个环节设置人工审核点</li></ul>
+<h3>【核心内容】</h3><div class="cb">信源收集 → 去重与摘要 → 选题评分 → 事实核验 → 内容大纲 → 长文/图文/短视频脚本 → 品牌语气与合规检查 → 进入草稿箱 → 人工审核后发布</div>
+<h3>【动手尝试】</h3><div class="cb">请先不要写文案。为一个"AI 办公提效"账号设计每周内容生产线。\n团队：1名主理人 + 1名运营，每周可投入16小时。\n目标：1篇公众号深度文章、3篇小红书图文、2条60秒短视频脚本、周五生成数据复盘。\n请输出：流程步骤和先后依赖、每一步输入输出和负责人、可自动化的部分、必须人工确认的部分</div>'''},
+  
+  {"id":"b10","ladder":"阶梯三","title":"多文件协作：建立内容工厂项目","bloom":"应用","scaffold":"L2","load":"中","time":"40min",
+   "body":'''<h3>【目标】</h3><ul><li>理解多文件项目如何分工</li><li>建立统一的数据结构</li><li>避免脚本、模板和内容互相混在一起</li></ul>
+<h4>推荐目录结构</h4><div class="cb">content-pipeline/\n├── sources/       # 原始信源\n├── topics/        # 选题库与评分\n├── briefs/        # 已确认的内容任务单\n├── templates/     # 平台模板和品牌规则\n├── drafts/        # 各平台草稿\n├── assets/        # 图片、图表素材\n├── reports/       # 数据与复盘\n├── src/           # 自动处理脚本\n├── tests/\n├── AGENTS.md\n└── README.md</div>'''},
+  
+  {"id":"b11","ladder":"阶梯三","title":"用 AGENTS.md 和 Skill 固化团队经验","bloom":"应用","scaffold":"L2","load":"中","time":"40min",
+   "body":'''<h3>【目标】</h3><ul><li>分清一次性任务、长期项目规则和可复用流程</li><li>为项目创建 AGENTS.md</li><li>把多平台改写变成 Skill</li></ul>
+<h4>三者区别</h4><table><tr><th>类型</th><th>用途</th></tr><tr><td>一次性提示</td><td>今天这一篇内容的具体任务</td></tr><tr><td>AGENTS.md</td><td>这个项目长期遵守的工作规则</td></tr><tr><td>Skill</td><td>遇到某一类任务时执行的完整流程</td></tr></table>
+<div class="ee"><div class="eeh">🐛 判断题</div><div class="badp">"这篇文章要用一个新标题"——这句话应该写在 AGENTS.md 里。</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 对还是错？</button><div class="hintt">❌ 错！这是<strong>一次性任务</strong>，应该放在当次对话的提示词里。AGENTS.md 应该放长期规则，比如"所有草稿不得自动发布"。Skill 应该放可重复执行的流程。</div></div>'''},
+  
+  {"id":"b12","ladder":"阶梯三","title":"多任务协作：研究、写作、质检并行","bloom":"分析","scaffold":"L1","load":"高","time":"45min",
+   "body":'''<h3>【目标】</h3><ul><li>判断哪些任务可以并行</li><li>设置统一汇总与冲突处理</li><li>完成一次多角色内容生产</li></ul>
+<h4>适合并行 vs 不适合并行</h4><table><tr><th>✅ 适合并行</th><th>❌ 不适合并行</th></tr><tr><td>不同来源的资料研究</td><td>同时修改同一段正文</td></tr><tr><td>不同平台规则分析</td><td>后一步依赖前一步结果</td></tr><tr><td>独立的可访问性/事实审查</td><td>任务目标还没确认</td></tr><tr><td>提出多个方案（不写入正式稿）</td><td>涉及对外发布没统一审批</td></tr></table>
+<div class="tt"><div class="ttb">🔄 迁移任务</div><h3>从内容并行到项目管理</h3><p>你学到了多任务协作。现在想一个需要多人协作的工作场景（比如产品发布、活动策划），画出哪些环节可以并行、哪些必须串行，并标注每个节点的输出文件。</p></div>'''},
+  
+  {"id":"b13","ladder":"阶梯四","title":"构建完整小应用：创作者运营工作台","bloom":"创造","scaffold":"L1","load":"高","time":"60min",
+   "body":'''<h3>【目标】</h3><ul><li>从需求、原型、实现到验收完成一个小应用</li><li>把选题、内容状态和复盘集中管理</li><li>建立可持续迭代的项目基础</li></ul>
+<h4>最小版本功能</h4><ol><li>新增选题并记录来源</li><li>设置平台、负责人、截止时间和状态</li><li>从"待研究"推进到"已发布"</li><li>查看逾期任务</li><li>保存本地数据</li><li>导出内容清单</li><li>展示本周产出和完成率</li><li>保留操作日志</li></ol>
+<h3>【动手尝试】</h3><div class="cb">请先不要编码。为"创作者运营工作台"整理：\n1.目标用户 2.五个真实使用场景 3.最小版本功能 4.暂时不做的功能 5.页面文字线框图 6.数据字段 7.验收标准 8.主要风险</div>'''},
+  
+  {"id":"b14","ladder":"阶梯四","title":"接入 OpenAI API：生成摘要与平台草稿","bloom":"应用","scaffold":"L1","load":"高","time":"50min",
+   "body":'''<h3>【目标】</h3><ul><li>理解 API 请求和响应</li><li>在服务器端完成一次 OpenAI API 调用</li><li>正确保护 API Key、费用和输入数据</li></ul>
+<h4>核心安全原则</h4><ul><li>API Key 不进入前端代码、截图和 Git</li><li>请求失败时给出普通用户能理解的提示</li><li>有加载状态，避免重复点击</li><li>限制输入长度</li><li>不上传客户秘密或不必要的个人信息</li><li>设置使用额度与费用提醒</li><li>结果只保存为草稿</li></ul>
+<div class="ee"><div class="eeh">🐛 找错题</div><div class="badp">const API_KEY = "sk-abc123..."  // 写在网页 JS 文件里</div><button class="hintb" onclick="this.nextElementSibling.classList.toggle(\'on\')">💡 有什么问题？</button><div class="hintt">❌ 致命错误！API Key 绝对不能写在前端代码里。任何人打开浏览器开发者工具就能看到你的 Key。正确做法：Key 放在服务器端环境变量中，前端通过自己的服务器中转调用。</div></div>'''},
+  
+  {"id":"b15","ladder":"阶梯四","title":"Codex SDK、自动化与性能优化","bloom":"应用","scaffold":"L1","load":"中","time":"40min",
+   "body":'''<h3>【目标】</h3><ul><li>分清 Responses API、Codex SDK 和普通脚本</li><li>把稳定流程做成自动化</li><li>用数据定位性能瓶颈</li></ul>
+<h4>工具选择</h4><table><tr><th>需求</th><th>建议工具</th></tr><tr><td>生成摘要、分类、提取结构化内容</td><td>Responses API</td></tr><tr><td>让智能体持续阅读和操作代码项目</td><td>Codex SDK</td></tr><tr><td>在脚本中执行一次 Codex 任务</td><td>codex exec</td></tr><tr><td>定期运行已经稳定的流程</td><td>Codex 自动化或系统定时任务</td></tr></table>'''},
+  
+  {"id":"b16","ladder":"阶梯四","title":"团队交付与开源协作","bloom":"创造","scaffold":"L1","load":"中","time":"45min",
+   "body":'''<h3>【目标】</h3><ul><li>理解仓库、Issue、分支、Commit 和 PR</li><li>把个人项目交付成团队可以接手的项目</li><li>完成一次小而清楚的协作改动</li></ul>
+<h4>团队交付清单</h4><ul><li>README 有用途、安装、运行和排错</li><li>提供示例数据，不包含真实隐私</li><li>使用 .env.example，不提交真实 Key</li><li>有测试和验收命令</li><li>目录和文件名清楚</li><li>记录已知限制</li><li>对外发布前检查许可证</li></ul>
+<blockquote>真正的交付不是"我这里能跑"，而是别人能理解、安装、验证、维护和安全退出。</blockquote>'''},
+]
+
+# ============================================================
+# BUILD HTML
+# ============================================================
+
+def build_view_home():
+    return '''<div class="view active" id="view-home">
+<section class="hero"><div class="hero-badge">AiDoris 出品 · 正式教材版</div>
+<h1>Codex <span class="gtext">统一学习平台</span></h1>
+<div class="hero-sub">架构深度 + 实战课程，双轨并进。<br>从理解原理到动手交付，一站完成。</div>
+<div class="hero-actions">
+<button class="btn btn-p" onclick="switchView(\'diag\')">📝 先测测你的水平</button>
+<button class="btn btn-o" onclick="switchView(\'track-b\')">🎯 直接开始实战</button>
+</div></section>
+<div class="path-grid">
+<div class="path-card ta" onclick="switchView(\'track-a\')">
+<div class="pi">🏗️</div><h3>轨道A：架构深度</h3>
+<p style="color:var(--muted);font-size:13px">从能力层到调度层的全链路自动化体系。理解 Codex 底层设计哲学 — Skill、MCP、scripts 三层模型。</p>
+<div class="pm"><span class="ptag">10 章</span><span class="ptag">22 道选择题</span><span class="ptag">原理导向</span></div>
+<div class="ps"><span>📖 预计 2-3 小时</span><span>🎯 理解「为什么」</span></div>
+<div class="pp"><div class="ppf" id="ta-prog" style="width:0%"></div></div></div>
+<div class="path-card tb" onclick="switchView(\'track-b\')">
+<div class="pi">🎯</div><h3>轨道B：实战课程</h3>
+<p style="color:var(--muted);font-size:13px">面向零基础的四阶梯交付型实战课。16节课，每节都有可交付成果。</p>
+<div class="pm"><span class="ptag">16 节课</span><span class="ptag">4 个阶梯</span><span class="ptag">交付导向</span></div>
+<div class="ps"><span>📖 预计 40-60 小时</span><span>🎯 学会「怎么做」</span></div>
+<div class="pp"><div class="ppf" id="tb-prog" style="width:0%"></div></div></div></div>
+<div style="text-align:center;padding:24px;color:var(--muted);font-size:14px">
+💡 <strong>建议路径：</strong>先完成学前诊断 → 走轨道B学会使用 → 再读轨道A理解原理
+</div></div>'''
+
+def build_view_diag():
+    qs = ''.join(f'''<div class="dq {'on' if i==0 else ''}" data-q="{i}">
+<div class="dqn">问题 {i+1} / {len(diagnosis_questions)}</div>
+<div class="dqq">{dq["q"]}</div>
+<div class="do">{"".join(f'<button class="doo" data-val="{opt[0]}">{opt}</button>' for opt in dq["opts"])}</div></div>''' for i,dq in enumerate(diagnosis_questions))
+    return f'''<div class="view" id="view-diag">
+<div class="diag-wrap"><h2 style="text-align:center;margin-bottom:16px">📝 学前诊断</h2>
+<p style="text-align:center;color:var(--muted);margin-bottom:24px">7 道题，帮你找到最适合的学习起点</p>
+<div class="diag-bar"><div class="diag-bar-fill" id="diag-bar-fill" style="width:0%"></div></div>
+<div id="diag-questions">{qs}</div>
+<div class="dr" id="diag-result"><h2 id="diag-result-title"></h2><div class="rl" id="diag-result-level"></div><div class="rr" id="diag-result-recs"></div></div></div></div>'''
+
+def build_view_track_a():
+    chs = []
+    for i,ch in enumerate(track_a):
+        bloom_class = {'记忆':'b1','理解':'b2','应用':'b3','分析':'b4','评价':'b5','创造':'b6'}.get(ch['bloom'],'b2')
+        scaff_class = {'L1':'s1','L2':'s2','L3':'s3'}.get(ch['scaffold'],'s1')
+        load_class = {'低':'cl','中':'cm','高':'ch'}.get(ch['load'],'cl')
+        bloom_cn = {'记忆':'记忆','理解':'理解','应用':'应用','分析':'分析','评价':'评价','创造':'创造'}.get(ch['bloom'],ch['bloom'])
+        scaff_cn = {'L1':'独立完成','L2':'框架引导','L3':'模板辅助'}.get(ch['scaffold'],ch['scaffold'])
+        load_cn = {'低':'低负荷','中':'中负荷','高':'高负荷'}.get(ch['load'],ch['load'])
+        
+        tags = f'<span class="mt {bloom_class}">🧠 {bloom_cn}</span><span class="mt {scaff_class}">🏗️ {scaff_cn}</span><span class="mt {load_class}">⚡ {load_cn} · {ch["time"]}</span>'
+        
+        body = ch['body']
+        if ch['id'] == 'a8':
+            # Build quiz HTML
+            quiz_html = ''
+            for cat in quizzes:
+                quiz_html += f'<h4 style="color:var(--violet);margin-top:20px">{cat["cat"]}</h4>'
+                for item in cat['items']:
+                    opts = ''.join(f'<div class="doo{" correct" if o[2] else ""}" style="cursor:default">{"🟩" if o[2] else "⬜"} {o[1]}</div>' for o in item['opts'])
+                    quiz_html += f'<div class="ee" style="cursor:pointer;border-color:rgba(101,230,165,.2);background:rgba(101,230,165,.02)" onclick="this.classList.toggle(\'revealed\')"><div style="font-weight:700;font-size:14px;margin-bottom:8px">{item["q"]}</div><div class="do">{opts}</div></div>\n'
+            body = body.replace('<div class="quiz-block"></div>', quiz_html)
+        
+        meta = ch.get('meta','')
+        chs.append(f'''<article class="lcard" data-lesson="{ch['id']}" id="lesson-{ch['id']}">
+<div class="lh"><div><div class="ln">第{i+1}章</div><div class="lt">{ch['title']}</div>
+<div style="color:var(--muted);font-size:13px;margin-top:2px">{ch['sub']}</div>
+<div class="lm">{tags}</div></div>
+<button class="lcb" data-lesson="{ch['id']}" onclick="toggleLesson('{ch['id']}')">○ 完成本章</button></div>
+<div class="lb">{body}{meta}</div></article>''')
+    return f'''<div class="view" id="view-track-a">
+<div class="content-area"><h2 class="section-title">🏗️ 轨道A：架构深度 <span style="color:var(--muted);font-size:14px;font-weight:400">— 从能力层到调度层的全链路自动化体系</span></h2>
+<p style="color:var(--muted);margin-bottom:24px">作者：AiDoris · AI 教学助手：Copilot · 版本：正式教材版</p>
+{"".join(chs)}</div></div>'''
+
+def build_view_track_b():
+    # Group by ladder
+    ladders = {}
+    for ch in track_b:
+        ladders.setdefault(ch['ladder'], []).append(ch)
+    
+    sections = []
+    for ladder_name, chs in ladders.items():
+        sections.append(f'<h2 class="section-title" style="color:var(--cyan)">{ladder_name}</h2>')
+        for ch in chs:
+            bloom_class = {'记忆':'b1','理解':'b2','应用':'b3','分析':'b4','评价':'b5','创造':'b6'}.get(ch['bloom'],'b2')
+            scaff_class = {'L1':'s1','L2':'s2','L3':'s3'}.get(ch['scaffold'],'s1')
+            load_class = {'低':'cl','中':'cm','高':'ch'}.get(ch['load'],'cl')
+            tags = f'<span class="mt {bloom_class}">🧠 {ch["bloom"]}</span><span class="mt {scaff_class}">🏗️ {"独立" if ch["scaffold"]=="L1" else "引导" if ch["scaffold"]=="L2" else "模板"}</span><span class="mt {load_class}">⚡ {ch["load"]}·{ch["time"]}</span>'
+            meta = ch.get('meta','')
+            sections.append(f'''<article class="lcard" data-lesson="{ch['id']}" id="lesson-{ch['id']}">
+<div class="lh"><div><div class="ln">{ladder_name}</div><div class="lt">{ch['title']}</div><div class="lm">{tags}</div></div>
+<button class="lcb" data-lesson="{ch['id']}" onclick="toggleLesson('{ch['id']}')">○ 完成本节</button></div>
+<div class="lb">{ch['body']}{meta}</div></article>''')
+    
+    return f'''<div class="view" id="view-track-b">
+<div class="content-area"><h2 class="section-title">🎯 轨道B：实战课程 <span style="color:var(--muted);font-size:14px;font-weight:400">— 面向零基础的四阶梯交付型实战课</span></h2>
+<blockquote style="padding:14px;margin-bottom:24px;border-left:3px solid var(--cyan);border-radius:0 10px 10px 0;background:rgba(69,231,208,.05)">
+面向零技术背景成年学习者的交付型实战教程<br>主线场景：办公提效、自媒体内容生产、自动化工作流、小应用开发<br>资料核对日期：2026 年 6 月 10 日</blockquote>
+{"".join(sections)}</div></div>'''
+
+def build_view_dashboard():
+    return '''<div class="view" id="view-dashboard">
+<div class="db"><h2 class="section-title">🏆 成果仪表盘</h2>
+<div class="dg">
+<div class="ds gd"><div class="dsv" id="d-total">0</div><div class="dsl">已完成课时</div></div>
+<div class="ds cy"><div class="dsv" id="d-percent">0%</div><div class="dsl">总完成率</div></div>
+<div class="ds gn"><div class="dsv" id="d-streak">0</div><div class="dsl">连续学习天数</div></div>
+<div class="ds vi"><div class="dsv" id="d-achievements">0</div><div class="dsl">成就徽章</div></div>
+</div>
+<div class="dsec"><h3>🎖️ 成就徽章</h3><div class="bdg" id="badge-grid"></div></div>
+<div class="dsec"><h3>📋 学习记录</h3><div class="alist" id="achievement-list"></div></div>
+<div class="dsec" style="text-align:center;margin-top:32px">
+<button class="btn btn-o" onclick="resetAll()">🔄 重置全部进度</button>
+</div></div></div>'''
+
+# Assemble full HTML
+full_html = f'''<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Codex 学习平台 · AiDoris</title>
+<style>
+:root{{--bg:#060816;--bg2:#0d1228;--panel:rgba(16,23,52,.88);--text:#eef3ff;--muted:#8896b8;--line:rgba(148,167,220,.16);--blue:#57a8ff;--cyan:#45e7d0;--violet:#a77bff;--pink:#ff70c9;--gold:#ffd166;--green:#65e6a5;--danger:#ff7a91;--orange:#ffa94d;--radius:18px;--shadow:0 20px 60px rgba(0,0,0,.3);--fs:1}}
+[data-theme="light"]{{--bg:#f4f7ff;--bg2:#e9efff;--panel:rgba(255,255,255,.94);--text:#17203a;--muted:#586685;--line:rgba(56,73,120,.14);--blue:#1769e8;--cyan:#008e80;--violet:#6f48d8;--pink:#c6338d;--gold:#a96800;--green:#087c49;--danger:#c73852;--orange:#c76000}}
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+html{{scroll-behavior:smooth}}
+body{{margin:0;min-width:320px;font-family:'Noto Sans SC',Inter,system-ui,sans-serif;background:radial-gradient(ellipse at 15% -10%,rgba(87,168,255,.1),transparent 40rem),radial-gradient(ellipse at 95% 12%,rgba(255,112,201,.06),transparent 35rem),var(--bg);color:var(--text);line-height:1.78;font-size:calc(1rem * var(--fs));overflow-x:hidden}}
+a{{color:var(--cyan);text-decoration:none}}button{{cursor:pointer;font:inherit}}
+.topbar{{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;min-height:56px;padding:6px clamp(12px,3vw,32px);border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(16px);flex-wrap:wrap}}
+.brand{{display:flex;align-items:center;gap:8px;font-weight:900;white-space:nowrap;font-size:15px}}
+.brand-mark{{display:grid;place-items:center;width:32px;aspect-ratio:1;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--violet),var(--pink));color:#fff;font-size:15px;font-weight:900}}
+.topbar nav{{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}}
+.topbar nav button{{padding:7px 11px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}}
+.topbar nav button:hover{{color:var(--text);background:rgba(255,255,255,.04)}}
+.topbar nav button.active{{color:var(--cyan);border-color:rgba(69,231,208,.25);background:rgba(69,231,208,.08)}}
+.toolbar-btn{{min-width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font-size:15px;display:grid;place-items:center}}
+.mobile-nav{{display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--panel);border-top:1px solid var(--line);padding:4px 8px;justify-content:space-around}}
+.mobile-nav button{{padding:6px 4px;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:1px}}
+.mobile-nav button.active{{color:var(--cyan)}}
+@media(max-width:860px){{.topbar nav{{display:none}}.mobile-nav{{display:flex}}}}
+.view{{display:none}}.view.active{{display:block}}
+.hero{{padding:clamp(36px,6vw,64px) clamp(16px,4vw,40px) 32px;text-align:center;position:relative}}
+.hero::before{{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(87,168,255,.08),transparent 55%);pointer-events:none}}
+.hero-badge{{display:inline-block;padding:5px 14px;border:1px solid var(--line);border-radius:99px;color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.07em;margin-bottom:16px}}
+.hero h1{{font-size:clamp(28px,4.5vw,48px);line-height:1.15;letter-spacing:-.02em;margin-bottom:10px;max-width:700px;margin-inline:auto}}
+.gtext{{background:linear-gradient(90deg,var(--blue),var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;color:transparent}}
+.hero-sub{{color:var(--muted);font-size:clamp(14px,1.8vw,17px);max-width:560px;margin:0 auto 24px}}
+.hero-actions{{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}}
+.btn{{display:inline-flex;align-items:center;gap:5px;padding:10px 20px;border-radius:99px;font-weight:700;font-size:13px;transition:all .2s;border:none}}
+.btn-p{{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;box-shadow:0 0 20px rgba(87,168,255,.2)}}
+.btn-p:hover{{transform:translateY(-1px);box-shadow:0 0 28px rgba(87,168,255,.35)}}
+.btn-o{{border:1px solid var(--line);background:var(--panel);color:var(--text)}}
+.btn-o:hover{{border-color:var(--cyan);color:var(--cyan)}}
+.path-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;padding:0 clamp(16px,4vw,40px) 32px;max-width:1000px;margin:0 auto}}
+.path-card{{padding:24px;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(160deg,rgba(255,255,255,.025),transparent 25%),var(--panel);transition:all .2s;cursor:pointer;position:relative;overflow:hidden}}
+.path-card:hover{{transform:translateY(-2px);box-shadow:var(--shadow)}}
+.path-card.ta{{border-left:3px solid var(--gold)}}.path-card.tb{{border-left:3px solid var(--cyan)}}
+.path-card .pi{{font-size:28px;margin-bottom:10px}}
+.path-card h3{{font-size:18px;margin-bottom:4px}}
+.path-card .pm{{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}}
+.ptag{{padding:3px 9px;border-radius:99px;font-size:10px;font-weight:600;background:rgba(87,168,255,.1);color:var(--blue)}}
+.path-card .ps{{display:flex;gap:12px;color:var(--muted);font-size:12px;margin-top:12px}}
+.path-card .pp{{height:4px;border-radius:2px;background:var(--line);margin-top:8px;overflow:hidden}}
+.path-card .ppf{{height:100%;border-radius:2px;transition:width .4s}}
+.path-card.ta .ppf{{background:var(--gold)}}.path-card.tb .ppf{{background:var(--cyan)}}
+
+.diag-wrap{{max-width:660px;margin:0 auto;padding:20px}}
+.diag-bar{{height:4px;background:var(--line);border-radius:2px;margin-bottom:28px}}
+.diag-bar-fill{{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .3s}}
+.dq{{padding:24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);margin-bottom:16px;display:none}}
+.dq.on{{display:block}}.dqn{{font-size:11px;color:var(--cyan);font-weight:800;letter-spacing:.08em;margin-bottom:6px}}
+.dqq{{font-size:17px;font-weight:700;margin-bottom:16px}}
+.do{{display:grid;gap:6px}}
+.doo{{padding:12px 16px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text);text-align:left;font-size:13px;transition:all .15s;cursor:pointer}}
+.doo:hover{{border-color:var(--blue);background:rgba(87,168,255,.05)}}
+.doo.sel{{border-color:var(--cyan);background:rgba(69,231,208,.1);color:var(--cyan);font-weight:700}}
+.doo.correct{{border-color:rgba(101,230,165,.4);background:rgba(101,230,165,.08);color:var(--green);font-weight:700}}
+.dr{{padding:28px;text-align:center;display:none}}
+.dr.on{{display:block}}.dr h2{{font-size:26px;margin-bottom:8px}}
+.dr .rl{{font-size:42px;margin:12px 0}}
+.dr .rr{{padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);margin:14px 0;text-align:left;font-size:14px;line-height:1.7}}
+
+.lcard{{margin:16px 0;padding:clamp(18px,2.5vw,28px);border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}}
+.lcard.done{{border-color:rgba(101,230,165,.35)}}
+.lh{{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}}
+.ln{{color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.08em}}
+.lt{{font-size:clamp(18px,2.5vw,24px);line-height:1.3;margin:3px 0 0}}
+.lm{{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}}
+.mt{{padding:3px 9px;border-radius:99px;font-size:10px;font-weight:700;white-space:nowrap}}
+.mt.b1{{background:rgba(167,123,255,.12);color:var(--violet)}}
+.mt.b2{{background:rgba(87,168,255,.12);color:var(--blue)}}
+.mt.b3{{background:rgba(69,231,208,.12);color:var(--cyan)}}
+.mt.b4{{background:rgba(255,112,201,.12);color:var(--pink)}}
+.mt.b5{{background:rgba(255,209,102,.12);color:var(--gold)}}
+.mt.b6{{background:rgba(255,122,145,.12);color:var(--danger)}}
+.mt.s1{{background:rgba(101,230,165,.12);color:var(--green)}}
+.mt.s2{{background:rgba(255,209,102,.12);color:var(--gold)}}
+.mt.s3{{background:rgba(255,122,145,.12);color:var(--danger)}}
+.mt.cl{{background:rgba(101,230,165,.12);color:var(--green)}}
+.mt.cm{{background:rgba(255,169,77,.12);color:var(--orange)}}
+.mt.ch{{background:rgba(255,122,145,.12);color:var(--danger)}}
+.lcb{{flex-shrink:0;padding:7px 12px;border:1px solid var(--line);border-radius:99px;background:rgba(87,168,255,.05);color:var(--text);font-size:11px;font-weight:800}}
+.lcb[aria-pressed="true"]{{background:var(--green);border-color:var(--green);color:#072516}}
+.lb{{font-size:calc(.94rem * var(--fs))}}
+.lb h3{{color:var(--blue);margin:22px 0 8px;font-size:17px}}
+.lb h4{{color:var(--violet);margin:14px 0 5px}}
+.lb p{{margin:8px 0}}.lb ul,.lb ol{{padding-left:1.3em;margin:6px 0}}.lb li{{margin:3px 0}}
+.lb table{{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12px}}
+.lb th,.lb td{{padding:8px 10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}
+.lb th{{background:rgba(87,168,255,.07);color:var(--cyan);font-weight:700}}
+.lb tr:last-child td{{border-bottom:none}}.lb th:last-child,.lb td:last-child{{border-right:none}}
+.lb blockquote{{margin:14px 0;padding:12px 16px;border-left:3px solid var(--violet);border-radius:0 10px 10px 0;background:rgba(167,123,255,.06)}}
+.lb code{{font-family:'JetBrains Mono',monospace;font-size:.87em}}
+.lb :not(pre)>code{{padding:1px 5px;border:1px solid var(--line);border-radius:4px;background:rgba(87,168,255,.07);color:var(--cyan)}}
+.cb{{position:relative;margin:12px 0;padding:16px;border:1px solid rgba(87,168,255,.16);border-radius:10px;background:#080d1d;color:#d9e8ff;overflow-x:auto;font-size:12px;white-space:pre-wrap;font-family:'JetBrains Mono',monospace}}
+.mp{{margin:22px 0;padding:16px 20px;border:2px dashed rgba(255,209,102,.22);border-radius:var(--radius);background:rgba(255,209,102,.05);display:flex;gap:10px;align-items:flex-start}}
+.mpi{{font-size:22px;flex-shrink:0}}.mpt{{font-size:13px;color:var(--gold);font-weight:500}}.mpt strong{{color:var(--text)}}
+.ee{{margin:18px 0;padding:18px;border:1px solid rgba(255,122,145,.18);border-radius:var(--radius);background:rgba(255,122,145,.03)}}
+.eeh{{font-weight:800;color:var(--danger);margin-bottom:6px;font-size:13px}}
+.ee .badp{{padding:12px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.15);font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:10px;white-space:pre-wrap;color:var(--text)}}
+.ee .hintb{{padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--muted);font-size:11px}}
+.ee .hintt{{display:none;margin-top:8px;padding:10px;border-radius:6px;background:rgba(101,230,165,.06);color:var(--green);font-size:12px;line-height:1.6}}
+.ee .hintt.on{{display:block}}
+.tt{{margin:22px 0;padding:20px;border:2px solid rgba(87,168,255,.12);border-radius:var(--radius);background:var(--panel)}}
+.tt .ttb{{display:inline-block;padding:3px 10px;border-radius:99px;background:rgba(167,123,255,.1);color:var(--violet);font-size:10px;font-weight:800;letter-spacing:.04em;margin-bottom:8px}}
+.tt h3{{font-size:18px;margin-bottom:6px}}
+.ee.revealed .doo:not(.correct){{opacity:.35}}
+
+.db{{max-width:820px;margin:0 auto;padding:20px}}
+.dg{{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}}
+.ds{{padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);text-align:center}}
+.dsv{{font-size:clamp(24px,3.5vw,34px);font-weight:900}}.dsl{{font-size:12px;color:var(--muted);margin-top:3px}}
+.ds.gd .dsv{{color:var(--gold)}}.ds.cy .dsv{{color:var(--cyan)}}.ds.gn .dsv{{color:var(--green)}}.ds.vi .dsv{{color:var(--violet)}}
+.bdg{{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}}
+.bd{{padding:8px 14px;border:1px solid var(--line);border-radius:99px;font-size:13px;font-weight:700;opacity:.25;transition:all .3s}}
+.bd.ea{{opacity:1;border-color:var(--gold);background:rgba(255,209,102,.08);color:var(--gold)}}
+.dsec{{margin:24px 0}}.dsec h3{{margin-bottom:10px;font-size:17px}}
+.alist{{display:grid;gap:6px}}
+.aitem{{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}}
+.aicon{{font-size:22px}}.atext{{flex:1}}.aname{{font-weight:700;font-size:13px}}.adesc{{font-size:11px;color:var(--muted)}}
+
+.content-area{{max-width:900px;margin:0 auto;padding:20px}}
+.section-title{{font-size:clamp(22px,3.5vw,32px);margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--line)}}
+.toast{{position:fixed;bottom:80px;right:16px;z-index:150;max-width:300px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:var(--shadow);color:var(--text);transform:translateY(140%);transition:transform .3s;font-size:12px}}
+.toast.show{{transform:translateY(0)}}
+.back-top{{position:fixed;right:16px;bottom:80px;z-index:50;width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);display:grid;place-items:center;font-size:16px;opacity:0;pointer-events:none;transition:all .2s}}
+.back-top.show{{opacity:1;pointer-events:auto}}
+.read-bar{{position:fixed;top:0;left:0;z-index:101;height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--pink));width:0;transition:width .1s linear}}
+.cele{{position:fixed;inset:0;z-index:200;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}}
+.cele.fire{{opacity:1}}.cele-text{{font-size:clamp(22px,4vw,34px);font-weight:900;position:relative;z-index:1;animation:pop .5s cubic-bezier(.18,.89,.32,1.28)}}
+@keyframes pop{{0%{{transform:scale(0);opacity:0}}100%{{transform:scale(1);opacity:1}}}}
+.footer{{padding:36px 20px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:40px}}
+</style>
+</head>
+<body>
+<div class="read-bar" id="read-bar"></div>
+<header class="topbar">
+<div class="brand"><div class="brand-mark">C</div><span>Codex 学习平台</span></div>
+<nav>
+<button data-view="home" class="active" onclick="switchView('home')">🏠 首页</button>
+<button data-view="diag" onclick="switchView('diag')">📝 诊断</button>
+<button data-view="track-a" onclick="switchView('track-a')">🏗️ 架构</button>
+<button data-view="track-b" onclick="switchView('track-b')">🎯 实战</button>
+<button data-view="dashboard" onclick="switchView('dashboard')">🏆 仪表盘</button>
+</nav>
+<button class="toolbar-btn" onclick="toggleTheme()" title="切换主题">◐</button>
+</header>
+
+<nav class="mobile-nav">
+<button data-view="home" class="active" onclick="switchView('home')"><span>🏠</span>首页</button>
+<button data-view="diag" onclick="switchView('diag')"><span>📝</span>诊断</button>
+<button data-view="track-a" onclick="switchView('track-a')"><span>🏗️</span>架构</button>
+<button data-view="track-b" onclick="switchView('track-b')"><span>🎯</span>实战</button>
+<button data-view="dashboard" onclick="switchView('dashboard')"><span>🏆</span>仪表盘</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<button class="back-top" id="back-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})">↑</button>
+<div class="cele" id="cele"><div class="cele-text" id="cele-text"></div></div>
+
+{build_view_home()}
+{build_view_diag()}
+{build_view_track_a()}
+{build_view_track_b()}
+{build_view_dashboard()}
+
+<div class="footer">📘 Codex 学习平台 · AiDoris 出品 · 正式教材版 · 资料核对至 2026 年 6 月</div>
+
+<script>
+// ======== STATE ========
+const K = 'codex-academy-v2';
+let S = loadState();
+
+function loadState() {{
+  try {{ const p = JSON.parse(localStorage.getItem(K)); return {{ completed: p?.completed || [], diagDone: p?.diagDone || false, diagScore: p?.diagScore || 0, streak: p?.streak || 0, lastDate: p?.lastDate || '', achievements: p?.achievements || [] }}; }}
+  catch {{ return {{ completed: [], diagDone: false, diagScore: 0, streak: 0, lastDate: '', achievements: [] }}; }}
+}}
+function saveState() {{ localStorage.setItem(K, JSON.stringify(S)); }}
+
+// ======== STREAK ========
+const today = new Date().toISOString().slice(0,10);
+if (S.lastDate) {{
+  const last = new Date(S.lastDate);
+  const diff = Math.floor((new Date(today) - last) / 86400000);
+  if (diff === 1) {{ S.streak += 1; }}
+  else if (diff > 1) {{ S.streak = 1; }}
+}} else {{ S.streak = 1; }}
+S.lastDate = today;
+saveState();
+
+// ======== VIEW SWITCHING ========
+function switchView(name) {{
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+  const view = document.getElementById('view-' + name);
+  if (view) view.classList.add('active');
+  document.querySelectorAll('[data-view="' + name + '"]').forEach(b => b.classList.add('active'));
+  window.scrollTo({{top:0,behavior:'smooth'}});
+  if (name === 'dashboard') updateDashboard();
+  updateHomeProgress();
+}}
+
+// ======== TOGGLE LESSON ========
+function toggleLesson(id) {{
+  const idx = S.completed.indexOf(id);
+  if (idx === -1) {{
+    S.completed.push(id);
+    toast('✅ 已完成！');
+    // Check achievements
+    updateAchievements();
+    // Celebrate
+    celebrate();
+  }} else {{
+    S.completed.splice(idx, 1);
+    toast('已取消完成');
+  }}
+  saveState();
+  renderAllLessons();
+  updateHomeProgress();
+}}
+
+function renderAllLessons() {{
+  document.querySelectorAll('.lcard').forEach(card => {{
+    const id = card.dataset.lesson;
+    const done = S.completed.includes(id);
+    card.classList.toggle('done', done);
+    const btn = card.querySelector('.lcb');
+    if (btn) {{
+      btn.setAttribute('aria-pressed', done.toString());
+      btn.textContent = done ? '✓ 已完成' : '○ 完成本节';
+    }}
+  }});
+}}
+
+// ======== ACHIEVEMENTS ========
+function updateAchievements() {{
+  const ta = track_a_ids.filter(id => S.completed.includes(id)).length;
+  const tb_l1 = track_b_l1.filter(id => S.completed.includes(id)).length;
+  const tb_l2 = track_b_l2.filter(id => S.completed.includes(id)).length;
+  const tb_l3 = track_b_l3.filter(id => S.completed.includes(id)).length;
+  const total = S.completed.length;
+  const stats = {{ total, ta, tb_l1, tb_l2, tb_l3, streak: S.streak }};
+
+  const defs = {json.dumps([{"id":a["id"],"icon":a["icon"],"name":a["name"],"desc":a["desc"]} for a in achievements], ensure_ascii=False)};
+  
+  defs.forEach(a => {{
+    const cond_met = checkAchievement(a.id, stats);
+    if (cond_met && !S.achievements.includes(a.id)) {{
+      S.achievements.push(a.id);
+      toast('🎉 获得成就：' + a.name + '！');
+      celebrate();
+    }}
+  }});
+  saveState();
+}}
+
+const track_a_ids = {json.dumps([ch["id"] for ch in track_a])};
+const track_b_l1 = {json.dumps([ch["id"] for ch in track_b if ch["ladder"]=="阶梯一"])};
+const track_b_l2 = {json.dumps([ch["id"] for ch in track_b if ch["ladder"]=="阶梯二"])};
+const track_b_l3 = {json.dumps([ch["id"] for ch in track_b if ch["ladder"]=="阶梯三"])};
+
+function checkAchievement(id, stats) {{
+  const conds = {{
+    'first-lesson': stats.total >= 1,
+    'track-a-done': stats.ta >= 10,
+    'track-b-ladder1': stats.tb_l1 >= 4,
+    'track-b-ladder2': stats.tb_l2 >= 4,
+    'track-b-ladder3': stats.tb_l3 >= 4,
+    'track-b-done': stats.total >= 16,
+    'streak-3': stats.streak >= 3,
+    'streak-7': stats.streak >= 7,
+    'full-done': stats.ta >= 10 && stats.total >= 16,
+  }};
+  return conds[id] || false;
+}}
+
+// ======== HOME PROGRESS ========
+function updateHomeProgress() {{
+  const ta = Math.round((track_a_ids.filter(id => S.completed.includes(id)).length / track_a_ids.length) * 100);
+  const tb = Math.round((S.completed.filter(id => id.startsWith('b')).length / {len(track_b)}) * 100);
+  const taEl = document.getElementById('ta-prog');
+  const tbEl = document.getElementById('tb-prog');
+  if (taEl) taEl.style.width = ta + '%';
+  if (tbEl) tbEl.style.width = tb + '%';
+}}
+
+// ======== DASHBOARD ========
+function updateDashboard() {{
+  const ta = track_a_ids.filter(id => S.completed.includes(id)).length;
+  const tb = S.completed.filter(id => id.startsWith('b')).length;
+  const total = S.completed.length;
+  const percent = Math.round((total / ({len(track_a) + len(track_b)})) * 100);
+  
+  document.getElementById('d-total').textContent = total;
+  document.getElementById('d-percent').textContent = percent + '%';
+  document.getElementById('d-streak').textContent = S.streak;
+  document.getElementById('d-achievements').textContent = S.achievements.length;
+
+  // Badges
+  const defs = {json.dumps([{"id":a["id"],"icon":a["icon"],"name":a["name"]} for a in achievements], ensure_ascii=False)};
+  const bg = document.getElementById('badge-grid');
+  bg.innerHTML = defs.map(a => '<span class="bd' + (S.achievements.includes(a.id) ? ' ea' : '') + '">' + a.icon + ' ' + a.name + '</span>').join('');
+
+  // Achievement list
+  const al = document.getElementById('achievement-list');
+  const earned = defs.filter(a => S.achievements.includes(a.id));
+  if (earned.length === 0) {{
+    al.innerHTML = '<div class="aitem"><div class="aicon">📖</div><div class="atext"><div class="aname">还没有获得成就</div><div class="adesc">开始学习并完成课程来解锁成就徽章</div></div></div>';
+  }} else {{
+    al.innerHTML = earned.map(a => '<div class="aitem"><div class="aicon">' + a.icon + '</div><div class="atext"><div class="aname">' + a.name + '</div><div class="adesc">已解锁</div></div></div>').join('');
+  }}
+}}
+
+// ======== CELEBRATION ========
+function celebrate() {{
+  const cele = document.getElementById('cele');
+  const text = document.getElementById('cele-text');
+  const msgs = ['🎉 太棒了！', '🌟 继续加油！', '💪 你在进步！', '🔥 势不可挡！', '👏 又完成一个！'];
+  text.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  cele.classList.add('fire');
+  setTimeout(() => cele.classList.remove('fire'), 2000);
+}}
+
+// ======== DIAGNOSIS ========
+let diagAnswers = [];
+document.querySelectorAll('.doo').forEach(btn => {{
+  btn.addEventListener('click', function() {{
+    const qDiv = this.closest('.dq');
+    // Select this option
+    qDiv.querySelectorAll('.doo').forEach(b => b.classList.remove('sel'));
+    this.classList.add('sel');
+    // Move to next after short delay
+    const qIdx = parseInt(qDiv.dataset.q);
+    diagAnswers[qIdx] = this.dataset.val;
+    setTimeout(() => {{
+      const next = document.querySelector('.dq[data-q="' + (qIdx + 1) + '"]');
+      if (next) {{
+        qDiv.classList.remove('on');
+        next.classList.add('on');
+      }} else {{
+        // All done — show result
+        showDiagResult();
+      }}
+      // Update progress bar
+      const answered = diagAnswers.filter(a => a !== undefined).length;
+      document.getElementById('diag-bar-fill').style.width = Math.round((answered / 7) * 100) + '%';
+    }}, 400);
+  }});
+}});
+
+function showDiagResult() {{
+  const scores = {json.dumps([dq["scores"] for dq in diagnosis_questions])};
+  let total = 0;
+  diagAnswers.forEach((ans, i) => {{ if (ans) total += scores[i][ans] || 0; }});
+  const maxScore = 22;
+  const pct = Math.round((total / maxScore) * 100);
+  S.diagDone = true;
+  S.diagScore = total;
+  saveState();
+
+  let level, emoji, title, recs;
+  if (pct <= 25) {{
+    level = '🌱'; emoji = '初学者'; title = '欢迎来到 Codex 世界！';
+    recs = '<p><strong>推荐路径：</strong>从<strong>轨道B（实战课程）阶梯一</strong>开始。不需要任何基础，跟着每节的「动手尝试」一步一步做。</p><p>💡 <strong>友情提示：</strong>刚开始可能会觉得陌生，这完全正常。Codex 的设计就是让零基础的人也能用。给自己 2-3 天适应期。</p>';
+  }} else if (pct <= 50) {{
+    level = '🌿'; emoji = '有基础'; title = '你已经有不错的直觉！';
+    recs = '<p><strong>推荐路径：</strong>从<strong>轨道B（实战课程）阶梯二</strong>开始，你会学得很快。阶梯一可以快速浏览，重点是 1.3 和 1.4 节。</p><p>💡 学完阶梯二后，强烈建议读<strong>轨道A（架构深度）</strong>来理解 Codex 的底层原理。</p>';
+  }} else if (pct <= 75) {{
+    level = '🌳'; emoji = '进阶者'; title = '你已经知道不少了！';
+    recs = '<p><strong>推荐路径：</strong>可以直接挑战<strong>轨道B阶梯三和四</strong>。同时建议深入<strong>轨道A</strong>来建立系统化理解。阶梯一和二的 1.3-2.3 节可以跳过。</p><p>💡 你已经能独立完成很多任务了。现在的重点是<strong>建立可复用的流程</strong>和<strong>团队交付能力</strong>。</p>';
+  }} else {{
+    level = '🌲'; emoji = '熟练者'; title = '你是 Codex 的熟练用户！';
+    recs = '<p><strong>推荐路径：</strong>直接进入<strong>轨道A（架构深度）</strong>全面理解 Codex 设计哲学。轨道B 重点攻克<strong>阶梯四</strong>的项目交付和 API 集成。阶梯一二三可以只看「纠错演练」和「迁移任务」。</p><p>💡 你现在的重点不是「学怎么用」，而是<strong>把经验固化下来</strong>——创建自己的 AGENTS.md、Skill 库和团队交付规范。</p>';
+  }}
+
+  document.getElementById('diag-result-title').textContent = title;
+  document.getElementById('diag-result-level').textContent = level + ' ' + emoji;
+  document.getElementById('diag-result-recs').innerHTML = recs;
+  document.querySelectorAll('.dq').forEach(d => d.classList.remove('on'));
+  document.getElementById('diag-result').classList.add('on');
+  document.getElementById('diag-bar-fill').style.width = '100%';
+}}
+
+// ======== THEME ========
+function toggleTheme() {{
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('codex-theme', next);
+}}
+
+// ======== TOAST ========
+function toast(msg) {{
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove('show'), 2000);
+}}
+
+// ======== SCROLL ========
+window.addEventListener('scroll', () => {{
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0;
+  document.getElementById('read-bar').style.width = pct + '%';
+  document.getElementById('back-top').classList.toggle('show', window.scrollY > 500);
+}}, {{passive: true}});
+
+// ======== RESET ========
+window.resetAll = function() {{
+  if (confirm('确定清空全部学习进度吗？此操作不可恢复。')) {{
+    S = {{ completed: [], diagDone: false, diagScore: 0, streak: 0, lastDate: '', achievements: [] }};
+    saveState();
+    renderAllLessons();
+    updateHomeProgress();
+    updateDashboard();
+    toast('进度已全部重置');
+  }}
+}};
+
+// ======== INIT ========
+const savedTheme = localStorage.getItem('codex-theme');
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+renderAllLessons();
+updateHomeProgress();
+</script>
+</body>
+</html>'''
+
+with open(OUT, 'w', encoding='utf-8') as f:
+    f.write(full_html)
+print(f"Written {len(full_html):,} bytes to {OUT}")
+print(f"Track A: {len(track_a)} chapters, Track B: {len(track_b)} lessons")
+print(f"Achievements: {len(achievements)}, Quiz questions: {sum(len(c['items']) for c in quizzes)}")
+print("DONE")
