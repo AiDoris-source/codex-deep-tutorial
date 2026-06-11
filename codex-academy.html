@@ -880,8 +880,10 @@ function updateAchievements() {
 }
 
 function showCertificate(achievement, serial) {
+  console.log('🎓 showCertificate called:', achievement.name, serial);
   const overlay = document.getElementById('cert-overlay');
   const card = document.getElementById('cert-card');
+  if (!overlay || !card) { console.error('cert elements missing!'); return; }
   const userName = S.name || '同学';
   
   card.innerHTML = `
@@ -907,10 +909,12 @@ function showCertificate(achievement, serial) {
     <button class="cert-btn" onclick="closeCertificate()">🎖️ 收下证书，继续学习</button>
   `;
   
-  // Show overlay
+  // Force show
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'auto';
   overlay.classList.add('show');
   
-  // Burst confetti
   spawnConfetti();
 }
 
@@ -921,7 +925,10 @@ function showCertById(id) {
 }
 
 function closeCertificate() {
-  document.getElementById('cert-overlay').classList.remove('show');
+  const overlay = document.getElementById('cert-overlay');
+  overlay.classList.remove('show');
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
   document.getElementById('cert-confetti').innerHTML = '';
 }
 
