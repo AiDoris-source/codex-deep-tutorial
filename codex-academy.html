@@ -227,7 +227,60 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <div class="pp"><div class="ppf" id="tb-prog" style="width:0%"></div></div></div></div>
 <div style="text-align:center;padding:24px;color:var(--muted);font-size:14px">
 💡 <strong>建议路径：</strong>先完成学前诊断 → 走轨道B学会使用 → 再读轨道A理解原理
-</div></div>
+</div>
+
+<div style="max-width:900px;margin:0 auto 40px;padding:0 20px">
+<h2 class="section-title">📦 Codex 安装指南</h2>
+<div class="lcard" style="margin:0">
+<div class="lb">
+
+<h3>方式一：桌面应用（推荐新手）</h3>
+<ol>
+<li>访问 <a href="https://developers.openai.com/codex/app" target="_blank">Codex 官方下载页</a></li>
+<li>下载对应系统版本（macOS / Windows）</li>
+<li>安装后打开，用 OpenAI 账号登录</li>
+<li>点击「打开项目文件夹」，选择你的工作目录</li>
+<li>保持默认权限设置（工作区写入）</li>
+<li>在下方的对话框中输入任务，开始使用</li>
+</ol>
+
+<h3>方式二：命令行 CLI（适合进阶用户）</h3>
+<div class="cb"># 安装 Node.js（如未安装，先去 nodejs.org 下载 LTS 版本）
+# 打开终端（Mac: 启动台 → 终端；Win: Win+R → cmd）
+
+# 全局安装 Codex CLI
+npm install -g @openai/codex
+
+# 验证安装
+codex --version
+
+# 进入工作目录
+cd ~/my-codex-project
+
+# 启动 Codex
+codex</div>
+
+<h3>方式三：IDE 扩展</h3>
+<p>在 VS Code 扩展商店搜索 <strong>Codex</strong>，安装 OpenAI 官方扩展。安装后在侧边栏会出现 Codex 面板。</p>
+
+<h3>🔐 权限设置建议</h3>
+<table>
+<tr><th>使用场景</th><th>推荐权限</th></tr>
+<tr><td>第一次接触、学习练习</td><td>工作区写入</td></tr>
+<tr><td>只查看项目、分析代码</td><td>只读</td></tr>
+<tr><td>服务器运维、系统级任务</td><td>完全访问（谨慎）</td></tr>
+</table>
+
+<h3>⚡ 安装后第一句话</h3>
+<div class="cb">请先只阅读当前文件夹，不要修改任何文件。
+告诉我：
+1. 你在哪个目录下工作；
+2. 你能看到哪些文件；
+3. 你的权限范围是什么。</div>
+
+<p style="color:var(--muted);margin-top:16px">💡 这是所有 Codex 用户都应该说的第一句话——先让它观察，再决定让它动手。</p>
+
+</div></div></div></div>
 <div class="view" id="view-diag">
 <div class="diag-wrap"><h2 style="text-align:center;margin-bottom:16px">📝 学前诊断</h2>
 <p style="text-align:center;color:var(--muted);margin-bottom:24px">7 道题，帮你找到最适合的学习起点</p>
@@ -257,7 +310,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <div class="dr" id="diag-result"><h2 id="diag-result-title"></h2><div class="rl" id="diag-result-level"></div><div class="rr" id="diag-result-recs"></div></div></div></div>
 <div class="view" id="view-track-a">
 <div class="content-area"><h2 class="section-title">🏗️ 轨道A：架构深度 <span style="color:var(--muted);font-size:14px;font-weight:400">— 从能力层到调度层的全链路自动化体系</span></h2>
-<p style="color:var(--muted);margin-bottom:24px">作者：AiDoris · AI 教学助手：Copilot · 版本：正式教材版</p>
+<p style="color:var(--muted);margin-bottom:24px">AiDoris制作</p>
 <article class="lcard" data-lesson="a1" id="lesson-a1">
 <div class="lh"><div><div class="ln">第1章</div><div class="lt">Codex 是什么</div>
 <div style="color:var(--muted);font-size:13px;margin-top:2px">重新定义 AI 的角色：从"回答者"到"执行者"</div>
