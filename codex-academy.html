@@ -194,9 +194,33 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 .grand-finale .gf-text{font-size:18px;color:var(--gold);margin-top:12px;animation:gfPop .8s cubic-bezier(.18,.89,.32,1.28) .4s both}
 .grand-finale .gf-close{margin-top:32px;padding:12px 32px;border:2px solid var(--gold);border-radius:99px;background:transparent;color:var(--gold);font-size:15px;font-weight:700;cursor:pointer;animation:gfPop .8s cubic-bezier(.18,.89,.32,1.28) .6s both}
 .grand-finale .gf-close:hover{background:var(--gold);color:#000}
+/* ========= NAME INPUT OVERLAY ========= */
+.name-overlay{position:fixed;inset:0;z-index:290;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s}
+.name-overlay.show{opacity:1;pointer-events:auto}
+.name-card{width:min(88vw,400px);padding:36px 28px;border:2px solid var(--line);border-radius:var(--radius);background:var(--panel);text-align:center;animation:certIn .5s cubic-bezier(.18,.89,.32,1.28)}
+.name-card h3{font-size:22px;margin-bottom:6px}
+.name-card p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.name-card input{width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;text-align:center;outline:none;transition:border-color .2s}
+.name-card input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(69,231,208,.1)}
+.name-card input::placeholder{color:var(--muted)}
+.name-card .name-btn{margin-top:16px;padding:12px 32px;border-radius:99px;background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;font-weight:700;font-size:14px;border:none;cursor:pointer;transition:all .2s}
+.name-card .name-btn:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(87,168,255,.3)}
+.name-card .skip-btn{margin-top:8px;background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:6px}
 </style>
 </head>
 <body>
+
+<!-- NAME INPUT -->
+<div class="name-overlay" id="name-overlay">
+  <div class="name-card">
+    <div style="font-size:40px;margin-bottom:8px">👋</div>
+    <h3>欢迎来到 Codex 学习平台</h3>
+    <p>在开始之前，请告诉我你的名字<br>（将用于你的荣誉证书上）</p>
+    <input type="text" id="name-input" placeholder="输入你的名字" maxlength="20" autocomplete="name">
+    <br><button class="name-btn" onclick="saveName()">🎓 开始学习之旅</button>
+    <br><button class="skip-btn" onclick="skipName()">暂不填写，直接进入</button>
+  </div>
+</div>
 
 <!-- COSMOS BACKGROUND -->
 <div class="cosmos" aria-hidden="true">
@@ -743,10 +767,36 @@ const K = 'codex-academy-v2';
 let S = loadState();
 
 function loadState() {
-  try { const p = JSON.parse(localStorage.getItem(K)); return { completed: p?.completed || [], diagDone: p?.diagDone || false, diagScore: p?.diagScore || 0, streak: p?.streak || 0, lastDate: p?.lastDate || '', achievements: p?.achievements || [] }; }
-  catch { return { completed: [], diagDone: false, diagScore: 0, streak: 0, lastDate: '', achievements: [] }; }
+  try { const p = JSON.parse(localStorage.getItem(K)); return { completed: p?.completed || [], diagDone: p?.diagDone || false, diagScore: p?.diagScore || 0, streak: p?.streak || 0, lastDate: p?.lastDate || '', achievements: p?.achievements || [], name: p?.name || '', certSerials: p?.certSerials || {} }; }
+  catch { return { completed: [], diagDone: false, diagScore: 0, streak: 0, lastDate: '', achievements: [], name: '', certSerials: {} }; }
 }
 function saveState() { localStorage.setItem(K, JSON.stringify(S)); }
+
+// ======== NAME MANAGEMENT ========
+function saveName() {
+  const input = document.getElementById('name-input');
+  const name = input.value.trim();
+  if (name) {
+    S.name = name;
+    saveState();
+  }
+  document.getElementById('name-overlay').classList.remove('show');
+}
+function skipName() {
+  document.getElementById('name-overlay').classList.remove('show');
+}
+// Show name overlay on first visit if no name saved
+if (!S.name) {
+  setTimeout(() => {
+    document.getElementById('name-overlay').classList.add('show');
+    document.getElementById('name-input').focus();
+  }, 600);
+}
+// Press Enter to submit
+document.addEventListener('DOMContentLoaded', () => {
+  const ni = document.getElementById('name-input');
+  if (ni) ni.addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
+});
 
 // ======== STREAK ========
 const today = new Date().toISOString().slice(0,10);
@@ -822,6 +872,8 @@ function updateAchievements() {
       let serial = parseInt(localStorage.getItem('codex-cert-serial') || '101');
       serial += 1;
       localStorage.setItem('codex-cert-serial', serial);
+      // Save serial per achievement
+      S.certSerials[a.id] = serial;
       // Show certificate
       showCertificate(a, serial);
       // Special: grand finale for full-done
@@ -838,16 +890,16 @@ function updateAchievements() {
 function showCertificate(achievement, serial) {
   const overlay = document.getElementById('cert-overlay');
   const card = document.getElementById('cert-card');
-  const confetti = document.getElementById('cert-confetti');
+  const userName = S.name || '同学';
   
-  // Build certificate HTML
   card.innerHTML = `
     <button class="cert-close" onclick="closeCertificate()">✕</button>
     <img src="aidoris-logo.png" alt="AiDoris" class="cert-logo" onerror="this.style.display='none'">
     <div class="cert-title">AiDoris · Codex 学习平台</div>
     <div class="cert-heading">荣誉证书</div>
     <div class="cert-subtitle">
-      兹证明该学习者凭借卓越的学习毅力与非凡的专注力<br>
+      兹证明 <strong style="color:var(--gold);font-size:16px">${userName}</strong> 同学<br>
+      凭借卓越的学习毅力与非凡的专注力<br>
       成功解锁以下成就徽章
     </div>
     <div class="cert-badge-icon">${achievement.icon}</div>
@@ -932,18 +984,28 @@ function updateDashboard() {
   document.getElementById('d-streak').textContent = S.streak;
   document.getElementById('d-achievements').textContent = S.achievements.length;
 
-  // Badges
-  const defs = [{"id": "first-lesson", "icon": "🌟", "name": "初识者"}, {"id": "track-a-done", "icon": "🏗️", "name": "架构师"}, {"id": "track-b-ladder1", "icon": "📋", "name": "交付者"}, {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师"}, {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师"}, {"id": "track-b-done", "icon": "👑", "name": "构建者"}, {"id": "streak-3", "icon": "🔥", "name": "连续3天"}, {"id": "streak-7", "icon": "💎", "name": "7天坚持"}, {"id": "full-done", "icon": "🏅", "name": "全栈大师"}];
+  // Badges - clickable when earned
+  const fullDefs = [{"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"}, {"id": "track-a-done", "icon": "🏗️", "name": "架构师", "desc": "完成轨道A全部10章"}, {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"}, {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"}, {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"}, {"id": "track-b-done", "icon": "👑", "name": "构建者", "desc": "完成全部16节实战课程"}, {"id": "streak-3", "icon": "🔥", "name": "连续3天", "desc": "连续学习3天"}, {"id": "streak-7", "icon": "💎", "name": "7天坚持", "desc": "连续学习7天"}, {"id": "full-done", "icon": "🏅", "name": "全栈大师", "desc": "同时完成两个轨道全部内容"}];
   const bg = document.getElementById('badge-grid');
-  bg.innerHTML = defs.map(a => '<span class="bd' + (S.achievements.includes(a.id) ? ' ea' : '') + '">' + a.icon + ' ' + a.name + '</span>').join('');
+  bg.innerHTML = fullDefs.map(a => {
+    const earned = S.achievements.includes(a.id);
+    const serial = S.certSerials[a.id] || '—';
+    if (earned) {
+      return '<span class="bd ea" style="cursor:pointer" onclick="showCertificate(' + JSON.stringify(a).replace(/"/g,'&quot;') + ',' + serial + ')" title="点击查看证书">' + a.icon + ' ' + a.name + '</span>';
+    }
+    return '<span class="bd">' + a.icon + ' ' + a.name + '</span>';
+  }).join('');
 
-  // Achievement list
+  // Achievement list - clickable
   const al = document.getElementById('achievement-list');
-  const earned = defs.filter(a => S.achievements.includes(a.id));
-  if (earned.length === 0) {
+  const earnedFull = fullDefs.filter(a => S.achievements.includes(a.id));
+  if (earnedFull.length === 0) {
     al.innerHTML = '<div class="aitem"><div class="aicon">📖</div><div class="atext"><div class="aname">还没有获得成就</div><div class="adesc">开始学习并完成课程来解锁成就徽章</div></div></div>';
   } else {
-    al.innerHTML = earned.map(a => '<div class="aitem"><div class="aicon">' + a.icon + '</div><div class="atext"><div class="aname">' + a.name + '</div><div class="adesc">已解锁</div></div></div>').join('');
+    al.innerHTML = earnedFull.map(a => {
+      const serial = S.certSerials[a.id] || '—';
+      return '<div class="aitem" style="cursor:pointer" onclick="showCertificate(' + JSON.stringify(a).replace(/"/g,'&quot;') + ',' + serial + ')" title="点击查看证书"><div class="aicon">' + a.icon + '</div><div class="atext"><div class="aname">' + a.name + ' 📜</div><div class="adesc">NO.' + serial + ' · 点击查看证书</div></div></div>';
+    }).join('');
   }
 }
 
