@@ -164,6 +164,36 @@ a{color:var(--cyan);text-decoration:none}button{cursor:pointer;font:inherit}
 @keyframes cloudDrift{0%{transform:translateX(-120px)}100%{transform:translateX(calc(100vw + 120px))}}
 body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 .footer{padding:36px 20px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:40px}
+/* ========= CERTIFICATE OVERLAY ========= */
+.cert-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s}
+.cert-overlay.show{opacity:1;pointer-events:auto}
+.cert-card{position:relative;width:min(90vw,520px);padding:40px 32px 32px;border:3px solid var(--gold);border-radius:20px;background:linear-gradient(160deg,#0d1228,#111936,#0d1228);box-shadow:0 0 60px rgba(255,209,102,.2),0 0 120px rgba(255,209,102,.08),inset 0 0 80px rgba(255,209,102,.03);text-align:center;animation:certIn .6s cubic-bezier(.18,.89,.32,1.28)}
+@keyframes certIn{0%{transform:scale(.7) rotate(-3deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+.cert-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:var(--panel);color:var(--text);font-size:18px;display:grid;place-items:center;cursor:pointer;transition:all .2s;z-index:2}
+.cert-close:hover{border-color:var(--danger);color:var(--danger)}
+.cert-logo{width:56px;height:56px;border-radius:12px;margin-bottom:12px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(255,209,102,.3))}
+.cert-title{font-size:14px;color:var(--gold);letter-spacing:.12em;font-weight:700;margin-bottom:4px}
+.cert-heading{font-size:clamp(22px,4vw,30px);font-weight:900;margin-bottom:6px;background:linear-gradient(90deg,var(--gold),var(--cyan),var(--gold));-webkit-background-clip:text;color:transparent}
+.cert-subtitle{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.cert-badge-icon{font-size:48px;margin:8px 0}
+.cert-serial{font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:16px}
+.cert-serial span{color:var(--gold);font-weight:800;font-size:14px}
+.cert-message{font-size:14px;color:var(--text);line-height:1.8;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}
+.cert-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:99px;background:linear-gradient(135deg,var(--gold),#c8941e);color:#1a1a2e;font-weight:800;font-size:13px;border:none;cursor:pointer;margin-top:8px;transition:all .2s}
+.cert-btn:hover{transform:translateY(-1px);box-shadow:0 0 24px rgba(255,209,102,.3)}
+/* Confetti burst */
+.cert-confetti{position:fixed;inset:0;z-index:301;pointer-events:none}
+.cert-confetti span{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiBurst 2.5s ease-out forwards}
+@keyframes confettiBurst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+/* Grand finale */
+.grand-finale{position:fixed;inset:0;z-index:310;background:radial-gradient(ellipse at center,rgba(255,209,102,.15),rgba(0,0,0,.95));display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .8s}
+.grand-finale.show{opacity:1;pointer-events:auto}
+.grand-finale h2{font-size:clamp(30px,5vw,50px);font-weight:900;animation:gfPop .8s cubic-bezier(.18,.89,.32,1.28);margin-bottom:16px}
+@keyframes gfPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.grand-finale .gf-badge{font-size:80px;animation:gfPop .8s cubic-bezier(.18,.89,.32,1.28) .2s both}
+.grand-finale .gf-text{font-size:18px;color:var(--gold);margin-top:12px;animation:gfPop .8s cubic-bezier(.18,.89,.32,1.28) .4s both}
+.grand-finale .gf-close{margin-top:32px;padding:12px 32px;border:2px solid var(--gold);border-radius:99px;background:transparent;color:var(--gold);font-size:15px;font-weight:700;cursor:pointer;animation:gfPop .8s cubic-bezier(.18,.89,.32,1.28) .6s both}
+.grand-finale .gf-close:hover{background:var(--gold);color:#000}
 </style>
 </head>
 <body>
@@ -184,7 +214,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <nav>
 <button data-view="home" class="active" onclick="switchView('home')">🏠 首页</button>
 <button data-view="diag" onclick="switchView('diag')">📝 诊断</button>
-<button data-view="track-a" onclick="switchView('track-a')">🏗️ 架构</button>
+<button data-view="track-a" onclick="switchView('track-a')">🏗️ 深入理解</button>
 <button data-view="track-b" onclick="switchView('track-b')">🎯 实战</button>
 <button data-view="dashboard" onclick="switchView('dashboard')">🏆 仪表盘</button>
 </nav>
@@ -194,7 +224,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <nav class="mobile-nav">
 <button data-view="home" class="active" onclick="switchView('home')"><span>🏠</span>首页</button>
 <button data-view="diag" onclick="switchView('diag')"><span>📝</span>诊断</button>
-<button data-view="track-a" onclick="switchView('track-a')"><span>🏗️</span>架构</button>
+<button data-view="track-a" onclick="switchView('track-a')"><span>🏗️</span>深入</button>
 <button data-view="track-b" onclick="switchView('track-b')"><span>🎯</span>实战</button>
 <button data-view="dashboard" onclick="switchView('dashboard')"><span>🏆</span>仪表盘</button>
 </nav>
@@ -202,6 +232,20 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <div class="toast" id="toast"></div>
 <button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <div class="cele" id="cele"><div class="cele-text" id="cele-text"></div></div>
+
+<!-- CERTIFICATE OVERLAY -->
+<div class="cert-overlay" id="cert-overlay">
+  <div class="cert-card" id="cert-card"></div>
+</div>
+<div class="cert-confetti" id="cert-confetti"></div>
+
+<!-- GRAND FINALE -->
+<div class="grand-finale" id="grand-finale">
+  <h2 class="gtext">🏅 全栈大师</h2>
+  <div class="gf-badge">🎓</div>
+  <div class="gf-text">你已通关 Codex 学习平台全部内容！<br>从原理到实战，从零基础到构建者</div>
+  <button class="gf-close" onclick="document.getElementById('grand-finale').classList.remove('show')">🎉 太棒了，继续学习！</button>
+</div>
 
 <div class="view active" id="view-home">
 <section class="hero"><div style="margin-bottom:16px"><img src="aidoris-logo.png" alt="AiDoris" style="width:60px;height:60px;border-radius:14px;object-fit:contain;filter:drop-shadow(0 0 16px rgba(212,168,83,.25))"></div>
@@ -211,10 +255,11 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <div class="hero-actions">
 <button class="btn btn-p" onclick="switchView('diag')">📝 先测测你的水平</button>
 <button class="btn btn-o" onclick="switchView('track-b')">🎯 直接开始实战</button>
+<button class="btn btn-o" onclick="document.getElementById('install-guide').scrollIntoView({behavior:'smooth'})" style="border-color:rgba(255,209,102,.3);color:var(--gold)">📦 如何安装 Codex</button>
 </div></section>
 <div class="path-grid">
 <div class="path-card ta" onclick="switchView('track-a')">
-<div class="pi">🏗️</div><h3>轨道A：架构深度</h3>
+<div class="pi">🏗️</div><h3>轨道A：深入理解</h3>
 <p style="color:var(--muted);font-size:13px">从能力层到调度层的全链路自动化体系。理解 Codex 底层设计哲学 — Skill、MCP、scripts 三层模型。</p>
 <div class="pm"><span class="ptag">10 章</span><span class="ptag">22 道选择题</span><span class="ptag">原理导向</span></div>
 <div class="ps"><span>📖 预计 2-3 小时</span><span>🎯 理解「为什么」</span></div>
@@ -230,7 +275,7 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 </div>
 
 <div style="max-width:900px;margin:0 auto 40px;padding:0 20px">
-<h2 class="section-title">📦 Codex 安装指南</h2>
+<h2 class="section-title" id="install-guide">📦 Codex 安装指南</h2>
 <div class="lcard" style="margin:0">
 <div class="lb">
 
@@ -309,7 +354,7 @@ codex</div>
 <div class="do"><button class="doo" data-val="A">A. 完全陌生，从没打开过</button><button class="doo" data-val="B">B. 知道是什么但不会用</button><button class="doo" data-val="C">C. 会基本操作（cd、ls、运行脚本）</button><button class="doo" data-val="D">D. 熟练使用，能做自动化配置</button></div></div></div>
 <div class="dr" id="diag-result"><h2 id="diag-result-title"></h2><div class="rl" id="diag-result-level"></div><div class="rr" id="diag-result-recs"></div></div></div></div>
 <div class="view" id="view-track-a">
-<div class="content-area"><h2 class="section-title">🏗️ 轨道A：架构深度 <span style="color:var(--muted);font-size:14px;font-weight:400">— 从能力层到调度层的全链路自动化体系</span></h2>
+<div class="content-area"><h2 class="section-title">🏗️ 轨道A：深入理解 <span style="color:var(--muted);font-size:14px;font-weight:400">— 从能力层到调度层的全链路自动化体系</span></h2>
 <p style="color:var(--muted);margin-bottom:24px">AiDoris制作</p>
 <article class="lcard" data-lesson="a1" id="lesson-a1">
 <div class="lh"><div><div class="ln">第1章</div><div class="lt">Codex 是什么</div>
@@ -767,17 +812,82 @@ function updateAchievements() {
   const total = S.completed.length;
   const stats = { total, ta, tb_l1, tb_l2, tb_l3, streak: S.streak };
 
-  const defs = [{"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"}, {"id": "track-a-done", "icon": "🏗️", "name": "架构师", "desc": "完成轨道A全部10章"}, {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"}, {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"}, {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"}, {"id": "track-b-done", "icon": "👑", "name": "构建者", "desc": "完成全部16节实战课程"}, {"id": "streak-3", "icon": "🔥", "name": "连续3天", "desc": "连续学习3天"}, {"id": "streak-7", "icon": "💎", "name": "7天坚持", "desc": "连续学习7天"}, {"id": "full-done", "icon": "🏅", "name": "全栈大师", "desc": "同时完成两个轨道"}];
+  const defs = [{"id": "first-lesson", "icon": "🌟", "name": "初识者", "desc": "完成第一节课"}, {"id": "track-a-done", "icon": "🏗️", "name": "架构师", "desc": "完成轨道A全部10章"}, {"id": "track-b-ladder1", "icon": "📋", "name": "交付者", "desc": "完成实战课程阶梯一（4节）"}, {"id": "track-b-ladder2", "icon": "⚙️", "name": "工程师", "desc": "完成实战课程阶梯二（8节）"}, {"id": "track-b-ladder3", "icon": "🎼", "name": "编排大师", "desc": "完成实战课程阶梯三（12节）"}, {"id": "track-b-done", "icon": "👑", "name": "构建者", "desc": "完成全部16节实战课程"}, {"id": "streak-3", "icon": "🔥", "name": "连续3天", "desc": "连续学习3天"}, {"id": "streak-7", "icon": "💎", "name": "7天坚持", "desc": "连续学习7天"}, {"id": "full-done", "icon": "🏅", "name": "全栈大师", "desc": "同时完成两个轨道全部内容"}];
   
   defs.forEach(a => {
     const cond_met = checkAchievement(a.id, stats);
     if (cond_met && !S.achievements.includes(a.id)) {
       S.achievements.push(a.id);
-      toast('🎉 获得成就：' + a.name + '！');
-      celebrate();
+      // Get serial number (101 base + achievement count)
+      let serial = parseInt(localStorage.getItem('codex-cert-serial') || '101');
+      serial += 1;
+      localStorage.setItem('codex-cert-serial', serial);
+      // Show certificate
+      showCertificate(a, serial);
+      // Special: grand finale for full-done
+      if (a.id === 'full-done') {
+        setTimeout(() => {
+          document.getElementById('grand-finale').classList.add('show');
+        }, 2500);
+      }
     }
   });
   saveState();
+}
+
+function showCertificate(achievement, serial) {
+  const overlay = document.getElementById('cert-overlay');
+  const card = document.getElementById('cert-card');
+  const confetti = document.getElementById('cert-confetti');
+  
+  // Build certificate HTML
+  card.innerHTML = `
+    <button class="cert-close" onclick="closeCertificate()">✕</button>
+    <img src="aidoris-logo.png" alt="AiDoris" class="cert-logo" onerror="this.style.display='none'">
+    <div class="cert-title">AiDoris · Codex 学习平台</div>
+    <div class="cert-heading">荣誉证书</div>
+    <div class="cert-subtitle">
+      兹证明该学习者凭借卓越的学习毅力与非凡的专注力<br>
+      成功解锁以下成就徽章
+    </div>
+    <div class="cert-badge-icon">${achievement.icon}</div>
+    <div style="font-size:24px;font-weight:900;color:var(--gold);margin:4px 0">${achievement.name}</div>
+    <div style="font-size:13px;color:var(--muted)">${achievement.desc}</div>
+    <div class="cert-serial">证书编号：<span>NO. ${serial}</span> · 恭喜你成为第 <span>${serial}</span> 位获得此荣誉的学习者</div>
+    <div class="cert-message">
+      🎉 每一份坚持都值得被看见！<br>
+      你正在用行动证明——学习 Codex 不是难事，而是一场有趣的探索。<br>
+      这份证书，是你的努力勋章，也是你技术成长的里程碑。<br>
+      <strong style="color:var(--gold)">继续保持，下一个里程碑就在前方！</strong>
+    </div>
+    <button class="cert-btn" onclick="closeCertificate()">🎖️ 收下证书，继续学习</button>
+  `;
+  
+  // Show overlay
+  overlay.classList.add('show');
+  
+  // Burst confetti
+  spawnConfetti();
+}
+
+function closeCertificate() {
+  document.getElementById('cert-overlay').classList.remove('show');
+  document.getElementById('cert-confetti').innerHTML = '';
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('cert-confetti');
+  const colors = ['#ffd166','#57a8ff','#45e7d0','#ff70c9','#a77bff','#65e6a5','#ffa94d','#fff'];
+  let html = '';
+  for (let i = 0; i < 60; i++) {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const tx = (Math.random() - 0.5) * 600;
+    const ty = (Math.random() - 0.5) * 600 - 200;
+    const delay = Math.random() * 0.6;
+    html += `<span style="left:50%;top:50%;background:${color};--tx:${tx}px;--ty:${ty}px;animation-delay:${delay}s"></span>`;
+  }
+  container.innerHTML = html;
+  setTimeout(() => { container.innerHTML = ''; }, 3000);
 }
 
 const track_a_ids = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10"];
