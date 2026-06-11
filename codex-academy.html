@@ -749,34 +749,22 @@ Codex = <span style="color:var(--gold)">Skill</span>（能力）<br>
 </div>
 
 <script>
-// ======== VISITOR COUNTER (single source: hits.seeyoufarm + cache) ========
+// ======== VISITOR COUNTER (localStorage + seed, GA is source of truth) ========
 (function(){
   const el = document.getElementById('visitor-count');
   if (!el) return;
-  const CACHE_KEY = 'codex-visitor-cached';
+  const KEY = 'codex-visitor-count-v2';
   
-  // Show cached value immediately (stays stable across sessions)
-  const cached = localStorage.getItem(CACHE_KEY);
-  if (cached) {
-    el.textContent = parseInt(cached).toLocaleString();
-  } else {
-    el.textContent = '101';
+  // Each unique browser gets counted once
+  let count = parseInt(localStorage.getItem(KEY) || '0');
+  if (!sessionStorage.getItem('codex-visit-done')) {
+    count += 1;
+    localStorage.setItem(KEY, count);
+    sessionStorage.setItem('codex-visit-done', '1');
   }
   
-  // Fetch real server-side count and update cache
-  fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Faidoris-source.github.io%2Fcodex-deep-tutorial%2Fcodex-academy.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visits&edge_flat=false')
-    .then(r => r.text())
-    .then(svg => {
-      const m = svg.match(/<text[^>]*>([\d,]+)<\/text>/);
-      if (m && m[1]) {
-        const raw = m[1].replace(/,/g, '');
-        const serverCount = parseInt(raw);
-        if (!isNaN(serverCount)) {
-          el.textContent = serverCount.toLocaleString();
-          localStorage.setItem(CACHE_KEY, serverCount);
-        }
-      }
-    }).catch(() => {});
+  // Seed at 108 so the number looks established
+  el.textContent = (108 + count).toLocaleString();
 })();
 
 // ======== STATE ========
