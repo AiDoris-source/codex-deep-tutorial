@@ -309,6 +309,7 @@ h1 span{background:linear-gradient(90deg,var(--gold),var(--cyan),var(--pink));-w
 ---
 
 📌 点击「在看」+「转发」，让更多想学 AI 的人看到 🙏</div>
+    <button class="copy-btn" onclick="copyArticle()" style="display:block;width:100%;margin-top:16px;padding:16px;font-size:16px;font-weight:800;border:2px solid var(--gold);border-radius:12px;background:rgba(255,209,102,.08);color:var(--gold);cursor:pointer;transition:all .2s">📋 一键复制全文 → 粘贴到公众号编辑器</button>
     <div class="tip">💡 排版建议：配 6-8 张平台截图（首页/课程/证书/仪表盘），段落间留白充足。文末加「#Codex #AI学习 #免费课程」标签。</div>
   </div>
 </div>
@@ -362,6 +363,108 @@ h1 span{background:linear-gradient(90deg,var(--gold),var(--cyan),var(--pink));-w
 </div>
 
 <script>
+// ===== 一键复制公众号全文 =====
+function copyArticle() {
+  const article = `【导语 · 痛点切入】
+
+你打开过多少次 Codex，又默默关掉了？
+
+看了无数教程，刷了无数演示视频，但轮到自己动手时——第一句话都不知道该说什么。
+
+这不是你的问题。是因为大多数教程只告诉你「Codex 能做什么」，不告诉你「你该怎么一步步学会用它」。
+
+今天，我想送你一个礼物。
+
+---
+
+【正文 · 平台介绍】
+
+🔗 一个完全免费的 Codex 学习平台：
+https://aidoris-source.github.io/codex-deep-tutorial/codex-academy.html
+（浏览器打开就能用，不需要下载，不需要注册）
+
+我花了几个月时间，把两套 Codex 深度教程整合成一个统一的学习系统。
+
+📋 它长什么样？
+
+打开之后，你会看到一个双轨制的学习平台：
+
+🏗️ 轨道A：深入理解
+从能力层（Skill）到工具层（MCP）到调度层（scripts），把 Codex 的底层设计哲学讲透。10 章 + 22 道互动选择题——每道题点一下就能看到即时反馈和深度解析。答对了有「比马斯克还猛！🚀」的彩虹屁，答错了有「（作者已被抓来暴揍50下 👊😵）」的搞笑彩蛋。
+
+🎯 轨道B：实战课程
+这才是重点。面向零基础的 16 节交付型实战课，分四个阶梯：
+
+阶梯一（4-6h）：从会议记录生成行动周报
+阶梯二（8-12h）：搭建办公内容助手 + 提示词工程
+阶梯三（12-20h）：自媒体内容生产线 + AGENTS.md + Skill
+阶梯四（20-30h）：创作者运营工作台 + API + 自动化
+
+每节课都是「目标 → 真实案例 → 动手尝试 → 验收检查」的结构，不是理论课，是交付课。你学完一节，就能产出一个可用的成果。
+
+---
+
+🎓 一个让你惊喜的小设计：荣誉证书系统
+
+每完成 4 节课，你会解锁一个成就徽章。
+解锁时，整个屏幕会弹出——
+
+一张金灿灿的荣誉证书。
+
+上面写着你的名字，有证书编号（目前从 NO.101 开始发放），可以下载保存成 PNG 图片。
+
+说实话，我自己解锁第一个徽章的时候，
+看到「兹证明 XXX 同学 凭借卓越的学习毅力…」的那一刻，
+真的有点感动。
+
+学习不应该是孤军奋战。它应该有反馈，有成就感，有人告诉你——你做得很棒。
+
+---
+
+📝 还有这些用心之处
+
+🔮 学前诊断：7 道题帮你找到最适合的学习起点，不用盲目从头啃
+💭 元认知提示：学完关键概念后，会弹出「暂停，用你自己的话说一遍」
+🐛 纠错演练：故意出错的提示词，让你练习发现问题
+🔄 迁移任务：每个阶段结束，给你一个跨场景练习，把学到的用到工作中
+🌙 流星 + 月亮 + 太阳：深色模式有流星和月亮，浅色模式有太阳和光晕
+
+---
+
+【结尾 · 行动号召】
+
+这个平台，是我送给所有 AI 学习者的礼物。
+
+不卖课。不引流。永久免费。
+
+因为我知道——每一个想学 AI 的普通人都值得被认真对待，都值得拥有一个好的学习入口。
+
+🔗 平台链接：https://aidoris-source.github.io/codex-deep-tutorial/codex-academy.html
+
+💬 我的微信：ParentingLove（备注：Codex学习）
+欢迎来交流，不管是学习心得、平台建议，还是你卡在哪里了——我都愿意聊。
+
+—— AiDoris
+
+---
+
+📌 点击「在看」+「转发」，让更多想学 AI 的人看到 🙏`;
+
+  navigator.clipboard.writeText(article).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅ 已复制！直接粘贴到公众号编辑器';
+    btn.style.background = 'rgba(101,230,165,.15)';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = '📋 一键复制全文 → 粘贴到公众号编辑器';
+      btn.style.background = 'rgba(255,209,102,.08)';
+      btn.style.borderColor = 'var(--gold)';
+      btn.style.color = 'var(--gold)';
+    }, 2000);
+  });
+}
+
 document.querySelectorAll('.copy-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     const text = this.previousElementSibling?.textContent || this.closest('.post-card').querySelector('.post-body').textContent;
