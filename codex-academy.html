@@ -204,8 +204,8 @@ body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 <div class="cele" id="cele"><div class="cele-text" id="cele-text"></div></div>
 
 <div class="view active" id="view-home">
-<section class="hero"><div class="hero-badge">AiDoris 出品 · 正式教材版</div>
-<h1>Codex <span class="gtext">统一学习平台</span></h1>
+<section class="hero"><div style="margin-bottom:16px"><img src="aidoris-logo.png" alt="AiDoris" style="width:60px;height:60px;border-radius:14px;object-fit:contain;filter:drop-shadow(0 0 16px rgba(212,168,83,.25))"></div>
+<h1>Codex <span class="gtext">学习平台</span></h1>
 <div class="hero-sub">架构深度 + 实战课程，双轨并进。<br>从理解原理到动手交付，一站完成。</div>
 <div style="margin-top:6px;font-size:13px;color:var(--muted)">👁️ <span id="visitor-count" style="font-weight:700;color:var(--gold)">…</span> 位学习者访问过</div>
 <div class="hero-actions">
@@ -629,7 +629,7 @@ Codex = <span style="color:var(--gold)">Skill</span>（能力）<br>
   }
   const el = document.getElementById('visitor-count');
   if (el) {
-    el.textContent = (1 + count).toLocaleString();
+    el.textContent = (101 + count).toLocaleString();
     // Also try external counter for cross-browser accuracy
     fetch('https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Faidoris-source.github.io%2Fcodex-deep-tutorial%2Fcodex-academy.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visits&edge_flat=false')
       .then(r => r.text())
