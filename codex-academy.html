@@ -133,10 +133,54 @@ a{color:var(--cyan);text-decoration:none}button{cursor:pointer;font:inherit}
 .cele{position:fixed;inset:0;z-index:200;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
 .cele.fire{opacity:1}.cele-text{font-size:clamp(22px,4vw,34px);font-weight:900;position:relative;z-index:1;animation:pop .5s cubic-bezier(.18,.89,.32,1.28)}
 @keyframes pop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+/* ========= COSMOS BACKGROUND ========= */
+.cosmos{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}}
+.star-field{position:absolute;inset:0;opacity:.65;background:radial-gradient(ellipse at 12% 18%,rgba(61,91,170,.14),transparent 34%),radial-gradient(ellipse at 82% 26%,rgba(93,65,156,.1),transparent 30%),radial-gradient(ellipse at 48% 82%,rgba(27,115,137,.07),transparent 38%);filter:blur(14px);animation:nebula 18s ease-in-out infinite alternate}}
+@keyframes nebula{from{transform:scale(1.04)}to{transform:scale(1.1)}}
+.meteor{position:absolute;border-radius:50%;opacity:0;background:#fff;box-shadow:0 0 3px #fff,0 0 12px rgba(204,233,255,1),0 0 28px rgba(87,168,255,.6);mix-blend-mode:screen;width:7px;height:7px;animation:meteorFly var(--dur) cubic-bezier(.18,.72,.2,1) infinite}}
+.meteor::before{content:"";position:absolute;right:3px;top:50%;width:var(--tail);height:7px;border-radius:999px 0 0 999px;background:linear-gradient(90deg,transparent,rgba(111,181,240,.22) 58%,rgba(190,226,255,.7) 84%,#fff);transform:translateY(-50%);clip-path:polygon(0 50%,100% 0,100% 100%);filter:drop-shadow(0 0 2px rgba(145,204,255,.6)) drop-shadow(0 0 6px rgba(87,168,255,.2))}}
+.meteor.m1{--dur:14s;--tail:clamp(120px,16vw,260px);top:2%;left:-5%;animation-delay:-8s;--angle:14deg;transform:rotate(var(--angle))}}
+.meteor.m2{--dur:17s;--tail:clamp(100px,13vw,200px);top:8%;left:20%;animation-delay:-3s;--angle:18deg;transform:rotate(var(--angle))}}
+.meteor.m3{--dur:20s;--tail:clamp(150px,19vw,300px);top:15%;left:-8%;animation-delay:-12s;--angle:22deg;transform:rotate(var(--angle))}}
+@keyframes meteorFly{0%,76%{opacity:0;transform:rotate(var(--angle)) translate3d(-18vw,-10vh,0)}77%{opacity:0}78%{opacity:1}85%{opacity:1}89%,100%{opacity:0;transform:rotate(var(--angle)) translate3d(112vw,46vh,0)}}
+.moon{position:absolute;top:80px;right:clamp(30px,8vw,120px);width:clamp(80px,10vw,140px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dce8ff 52%,#8ca8d7);box-shadow:0 0 30px rgba(220,232,255,.5),0 0 90px rgba(87,168,255,.25);animation:moonFloat 7s ease-in-out infinite;opacity:1;transition:opacity .6s}}
+[data-theme="light"] .moon{opacity:0;pointer-events:none}
+@keyframes moonFloat{50%{transform:translateY(10px) rotate(1deg)}}
+.sun{position:absolute;top:80px;right:clamp(30px,8vw,120px);width:clamp(80px,10vw,140px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fffce8,rgba(255,220,120,.95) 35%,rgba(255,180,50,.85) 70%,rgba(255,140,20,.6));box-shadow:0 0 40px rgba(255,200,80,.5),0 0 120px rgba(255,160,30,.3),0 0 200px rgba(255,140,20,.15);animation:sunPulse 3s ease-in-out infinite;opacity:0;pointer-events:none;transition:opacity .6s}}
+[data-theme="light"] .sun{opacity:1;pointer-events:auto}
+@keyframes sunPulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(255,200,80,.5),0 0 120px rgba(255,160,30,.3)}50%{transform:scale(1.04);box-shadow:0 0 55px rgba(255,200,80,.6),0 0 140px rgba(255,160,30,.4)}}
+.cloud{position:absolute;border-radius:50%;background:rgba(255,255,255,.85);opacity:0;pointer-events:none;transition:opacity .6s}}
+[data-theme="light"] .cloud{opacity:1}
+.cloud::before,.cloud::after{content:"";position:absolute;border-radius:50%;background:inherit}}
+.cloud.c1{width:70px;height:40px;top:160px;left:8%;animation:cloudDrift 22s linear infinite}}
+.cloud.c1::before{{width:45px;height:45px;top:-22px;left:12px}}
+.cloud.c1::after{{width:35px;height:35px;top:-14px;left:38px}}
+.cloud.c2{width:55px;height:30px;top:60px;left:55%;animation:cloudDrift 28s linear infinite;animation-delay:-8s}}
+.cloud.c2::before{{width:35px;height:35px;top:-18px;left:8px}}
+.cloud.c2::after{{width:28px;height:28px;top:-10px;left:30px}}
+.cloud.c3{width:85px;height:45px;top:200px;left:75%;animation:cloudDrift 25s linear infinite;animation-delay:-15s;opacity:.75}}
+.cloud.c3::before{{width:50px;height:50px;top:-24px;left:14px}}
+.cloud.c3::after{{width:40px;height:40px;top:-16px;left:44px}}
+@keyframes cloudDrift{0%{transform:translateX(-120px)}100%{transform:translateX(calc(100vw + 120px))}}
+body.dark-bg .cosmos{opacity:1}body.light-bg .cosmos{opacity:.7}
 .footer{padding:36px 20px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:40px}
 </style>
 </head>
 <body>
+
+<!-- COSMOS BACKGROUND -->
+<div class="cosmos" aria-hidden="true">
+  <div class="star-field"></div>
+  <div class="moon"></div>
+  <div class="sun"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <i class="meteor m1"></i>
+  <i class="meteor m2"></i>
+  <i class="meteor m3"></i>
+</div>
+
 <div class="read-bar" id="read-bar"></div>
 <header class="topbar">
 <div class="brand"><div class="brand-mark">C</div><span>Codex 学习平台</span></div>
@@ -463,7 +507,12 @@ Codex = <span style="color:var(--gold)">Skill</span>（能力）<br>
 <button class="btn btn-o" onclick="resetAll()">🔄 重置全部进度</button>
 </div></div></div>
 
-<div class="footer">📘 Codex 学习平台 · AiDoris 出品 · 正式教材版 · 资料核对至 2026 年 6 月</div>
+<div class="footer">
+  <div style="margin-bottom:8px">📘 Codex 学习平台 · AiDoris制作 · 2026年6月</div>
+  <div style="font-size:13px;color:var(--gold);font-weight:600">
+    💬 联系作者 · WeChat：<span style="font-family:'JetBrains Mono',monospace;background:rgba(255,209,102,.1);padding:3px 10px;border-radius:6px;border:1px solid rgba(255,209,102,.2)">ParentingLove</span>
+  </div>
+</div>
 
 <script>
 // ======== STATE ========
